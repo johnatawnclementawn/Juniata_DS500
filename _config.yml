@@ -1,3 +1,8 @@
-<<<<<<< HEAD
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true
+include:
+  - ClementiPrj2SkillsApplication.Rmd
 theme: jekyll-theme-modernist
->>>>>>> 99cd23873cb2398f9e27530b1697a09bc35b1a44
