@@ -1,0 +1,122 @@
+---
+title: "OkCupidMoreGgplot"
+author: "Kim Roth & Johnathan Clementi"
+date: "1/25/2020"
+output: word_document
+---
+
+Before we start, we load packages both programs like in tidyverse and data like okaycupiddata. 
+```{r}
+library(tidyverse) #loads ggplot and the others
+library(okcupiddata) #loads the data we will use later today from ok cupid, a dating site.
+
+profiles <- okcupiddata::profiles #loads the okcupid data and names it profiles.
+
+```
+
+
+**Graphs from OkCupid data**
+
+The data from OkCupid is specifically from the San Fransisco area in June 2012. Let's look at the data.  Note you can click on the first symbol on the left in the output area to open a seperate window you can make bigger. You can click on the balck arrow to see more columns on variables.
+```{r}
+profiles 
+```
+
+If you want a listing of just the variable names and what type r thinks they are you can use the structure command, str.
+```{r}
+str(profiles) #variable names and info
+```
+
+Now to make some graphs.  Remember you should copy, paste and change code from IntroToGgplot.Rmd. So start the first exercise by copying the first scatterplot from IntroToGgplot.Rmd and changing the data set name and the variable names.
+
+
+1. Make a scatterplot of age vs. height. 
+```{r}
+ggplot(data = profiles) +geom_point(mapping=aes(x = age, y = height))
+
+```
+
+
+
+2. Make a scatterplot of age vs. height. Color by sex.
+```{r}
+ggplot(data = profiles) +geom_point(mapping=aes(x = age, y = height, color = sex))
+```
+
+
+3. Make a scatterplot of age vs. height. Size by income.
+```{r}
+ggplot(data = profiles) +geom_point(mapping=aes(x = age, y = height, size = income))
+```
+
+ Here is an example of adding a best fit line.
+ 
+```{r}
+ggplot(data = profiles) +geom_point(mapping=aes(x =height, y=income ))+geom_smooth(mapping=aes(x =height, y=income ), method="lm", se=0) 
+```
+
+geom_smooth makes a best fit curve
+lm stands for linear model as in we want to graph a line not another type of curve
+se=0 stands for standard error, it says to just graph the line without any kind of error region arround it.
+
+This is not the best data for making a best file line as the line doesn't fit well. We will not worry about that now, but will discuss it when we talk about modeling.
+4.  Make a scatterplot of age vs. height with a best fit line.
+```{r}
+ggplot(data = profiles) +geom_point(mapping=aes(x = age, y = height)) +geom_smooth(mapping=aes(x =height, y=income ), method="lm", se=0)
+```
+
+Now we will make graphs that are not scatterplots. Use the list of geoms from IntroToGgplot.Rmd or the ggplot cheat sheet to change your copied code from your first scatterplot
+
+5. Make a bar chart of drinks
+```{r}
+ggplot(data = profiles) +geom_bar(mapping = aes(x=drinks))
+```
+
+
+6. Make a bar chart of drinks and color the bars by sex using fill.
+```{r}
+ggplot(data = profiles) +geom_bar(mapping = aes(x=drinks,fill=sex))
+```
+
+7. Make a histogram of income. 
+```{r}
+ggplot(data = profiles) +geom_histogram(mapping = aes(x=income))
+```
+
+8. Make a histogram of income. Color the bars some color other than black using fill and change the border color using color.   Remember from IntroToGGplot.Rmd that things that change the graph but not the aes go outside the aes part but inside the geom.
+```{r}
+ggplot(data = profiles) +geom_histogram(mapping = aes(x=income), fill = 'orange', color = 'blue')
+```
+
+9. Make a boxplot of income by sex. For a boxplot the x aes has to be the categorical/discrete variable.
+```{r}
+ggplot(data=profiles) +geom_boxplot(mapping = aes(x=sex, y=income))
+```
+
+
+Here are two complicated bar graphs for us to break down. 
+10.  What  does facet_wrap do in each of these graphs? What does position="fill" change in the graph?
+
+Answer: The facet_wrap situates the sexual orietntations in a single vertical column.
+
+
+
+```{r}
+ggplot(data = profiles) + 
+  geom_bar(mapping = aes(x=drinks,fill=sex))+facet_wrap(~ orientation, ncol = 1)
+
+ggplot(data = profiles) + 
+  geom_bar(mapping = aes(x=drinks,fill=sex),position = "fill")+facet_wrap(~ orientation, ncol = 1)
+```
+
+
+
+This document is based on documents created by Adam Loy, Chester Ismay, Adrianna Escobo-Land and Albert Kim.
+In particular:
+
+Ismay, C., Kim A. ModernDive: An Introduction to Statistical and Data Sciences via R
+https://github.com/ismayc/moderndiver-book
+
+Kim A., Escobo-Land, A. OkCupid Data for Introductory Statistics and Data Science Courses,Journal of Statistics Education, Volume 23, Number 2 (2015)
+
+Loy A., Creating graphs with ggplot2, USCOTS 2017.

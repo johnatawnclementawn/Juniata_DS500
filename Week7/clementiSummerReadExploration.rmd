@@ -1,0 +1,131 @@
+---
+title: "clementiSummerReadExploration"
+author: "Johnathan Clementi"
+date: "3/10/2020"
+output: word_document
+---
+
+Data information: Juniata College's freshman Summer Reading assignment data
+
+Homework requirements: 
+1. Come up at least two questions you might have about your variables that you can try to answer with your exploration.
+2. Visualize Variation in one quantitative variable (1 Figure)
+3. Visualize variation in one categorical variable  (1 Figure)
+4. Visualize covariation for 3 groups of variables; graphs include: (3 Figures in total)
+  a. 1 figure of 1 categorical variable x 1 categorical variable
+  b. 1 figure of 1 quantitative variable x 1 quantitative variable
+  c. 1 figure of 1 categorical variable x 1 quantitative varaible
+  * Label graphs appropriately and include 1 sentence description.
+  * Include relevant statistics for each figure
+5. Describe how these figures answered the research questions
+  * Include new questions inspired by these analyses
+  
+
+Library load
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readxl)#for reading in excel files
+library(readr)
+```
+
+Read in data
+```{r}
+summerRead = read.csv("C:/Users/clemenj/Google Drive/Grad School/Juniata_DataScience/DS500/Week7/SummerRead.csv")
+```
+
+```{r}
+str(summerRead)
+```
+
+######################
+UN-TIDY DATA LIST:
+* This is a running list of all of the issues I find with the dataset while working on it:
+
+1. At the bottom of the dataset, there are approximately 41 records missing values for variables from Gender to SummerSurvey (Possibly someone accidentally deleted these values)
+
+2. Variables do not line up with metadata variables - function of combining datasets
+
+3. Year is stored as an integer, not a factor
+
+4. POE variable has a category of [BLANK] - Fill with NA?
+
+5. Answers to in WhyNotRead could be cleaned up and combined
+
+######################
+QUESTIONS:
+1. Do first generation students tend to or not read the book?
+1a. Is the status of first generation student serve as a predictor for how many books the student read over the summer?
+
+2. Is gender a predictor of the students reading the book?
+
+3. Are certain books less interesting to students as a whole? Compare `Book` and `WhyNotRead`
+
+4. Does book length correlate with the percentage of the book that the student read?
+
+5. Do the answers students gave to questions: '[book] challenged me to think' and '[book] was an enjoyable book' correlate?
+
+######################
+VISUALIZATIONS
+
+Variation in a single Categorical Variable:
+```{r}
+ggplot(data = summerRead, aes(x = POE)) +
+  geom_bar(mapping = aes(fill = POE)) + guides(fill = FALSE) +
+  labs(title = "Distribution of Students in General POE Focus", x = "Program of Emphasis", y = "Number of Students")
+
+summary(summerRead$POE)
+```
+Figure 1. This is the distribution of students across general Program of Emphasis topics.
+
+
+Variation in a single Quantitative Variable:
+
+```{r}
+ggplot(data = summerRead) +
+  geom_histogram(mapping = aes(x = BooksReadSummer), na.rm=TRUE) +
+  labs(title = "Number of Books Read by Students", x = "Number of Books Read", y = "Number of students which read ")
+
+summary(summerRead$BooksReadSummer)
+```
+Figure 2. This figure illustrates the number of students which read a certain number of books. 
+
+
+
+Covariation between two categorical variables:
+```{r}
+ggplot(data = summerRead) +
+  geom_count(mapping = aes(x = Book, y = WhyNotRead)) +
+  labs(title = "Why Students did not read each book", x = "Book Title", y = "Reason for not reading") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 45, hjust = 1))
+
+summary(summerRead$WhyNotRead)
+summary(summerRead$Book)
+```
+Figure 3. This figure illustrates the distribution of reasons provided for not reading the assigned summer-read by which book the student was supposed to read.
+
+
+
+Covariation between a categorical variable and a quantitative variable:
+```{r}
+ggplot(data = summerRead) +
+  geom_boxplot(mapping = aes(x = Book, y = QuizScore), na.rm = TRUE) +
+  labs(title = "Grade distributions for each book", x = "Book", y = "Quiz Score")
+
+summary(summerRead$Book)
+summary(summerRead$QuizScore)
+```
+Figure 4. Grade distributions for each book. Did students do well on with one book in particular?
+
+
+
+Covariation between two quantitative variables:
+```{r}
+ggplot(data = summerRead) +
+  geom_point(mapping = aes(x = BooksReadSummer, y = Challenge), na.rm = TRUE) +
+  labs(title = "Challenging summer read book and the total number of books read", x = "Number of books read over the summer", y = "Was the summer read challenging (5 is highest)")
+
+summary(summerRead$BooksReadSummer)
+summary(summerRead$Challenge)
+```
+Figure 5. Is there a relationship between number of books read, and finding the summer read challenging?
+

@@ -1,0 +1,217 @@
+---
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+title: "Model Basics Exercises"
+author: "Kim Roth & Johnathan Clementi"
+date: "4/7/2020"
+output: word_document
+---
+These are exercises based on the exercises in R for Data Science by Wickham and Grolemund.
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+
+
+We will use the data set fueleconomy:vehicles
+```{r}
+library(tidyverse)
+library(fueleconomy)
+vehicles<-fueleconomy::vehicles
+```
+
+
+Data for this file.
+```{r}
+vehicles
+```
+
+
+1. Make a linear model of cty as prediced by displ. Give the equation of the line.
+1A.
+```{r}
+ctyMpgModel = lm(cty~displ, data = vehicles)
+ctyMpgModel
+```
+
+```{r}
+ctyMpgModYInt = 25.812
+ctyMpgModCoef = -2.518
+```
+
+
+2. Graph the linear model from 1 using ggplot. How does the fit look?
+2A. Without further analysis, the line of fit follows the data well. Based on this figure, smaller 
+displacement values are less predictive of city mpg than vehicles with larger displacement.
+```{r}
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = displ, y = cty)) +
+  geom_smooth(mapping = aes(x = displ, y = cty), method = "lm", se=0)
+```
+
+
+3. Look at the first residual graph of the linear model. How does it look?
+3A. The dataset has a good constant spread and while the average value closely aligns with a '0' residual
+in the middle of the data, the upper and lower bounds do not fit as well. Additionally, the spread of 
+residuals at the upper bound means that as displacement increase, the model is less able to predict the
+city mpg.
+```{r}
+plot(ctyMpgModel)
+```
+
+
+4.  Instead of using `lm()` to fit a straight line, you can use `loess()` 
+    to fit a smooth curve. Repeat the model from 1. using
+    `loess()` instead of `lm()`. How does the result compare to 
+    `geom_smooth()`? What are the advantages and disadvantages to using a curve versus a line here?
+4A. The curved line presents a different message to the reader than a straight line does. For instance,
+looking at the linear model figure, I would identify that there is more variation of city mileage in cars
+with less displacement. Whereas looking at the locally estimated scatterplot smoothing figure, 
+I would more quickly highlight that cars with smaller displacement have better city mpg ratings. 
+```{r}
+ctyMpgCurveModel = loess(cty~displ, data = vehicles)
+ctyMpgCurveModel
+```
+
+```{r}
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = displ, y = cty)) +
+  geom_smooth(mapping = aes(x = displ, y = cty), method = "loess", se=0)
+```
+
+    
+In case you want to know more LOESS stands for, locally estimated scatterplot smoothing,it essentially puts together a bunch of linear for parts of the data, see https://simplystatistics.org/2014/02/13/loess-explained-in-a-gif/
+
+5. Predict the cty for displ of 1.9. 
+5A.
+```{r}
+predictedDispl = (ctyMpgModCoef * 1.9) + ctyMpgModYInt
+predictedDispl
+```
+
+
+6. Graph a scatterplot of cty vs. drive. Do you think a model is a good idea?
+6A.
+```{r}
+ggplot(data = vehicles) +
+  geom_point(mapping = aes(x = drive, y = cty))
+```
+
+
+7. Make a linear model for cty as predicted by drive.
+```{r}
+ctyDriveModel = lm(cty~drive, data = vehicles)
+ctyDriveModel
+```
+```{r}
+ctyDriveFWDCoef = 4.1005
+ctyDriveYInt = 16.8915
+```
+
+
+8. Look at the first residual graph of the linear model from 7. How does it look?
+8A. Judging by the average line vs the 0 residual line, the drive variable is a good predictor of
+city mpg. 
+```{r}
+plot(ctyDriveModel)
+```
+
+
+9. Predict the cty for the drive of 2-Wheel Drive.
+9A.
+```{r}
+predictedDrive = (ctyDriveFWDCoef * 1) + ctyDriveYInt
+predictedDrive
+```
+
+
+10.  Make scatterplots for the quantitative variables versus cty. Which looks like it is going to make the best linear model. Why?
+10A. City mpg and hwy mpg plotted against eachother seem like the best for a linear model. The spread of data
+indicate that generally as cty increases, so does hwy.
+```{r}
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = year, y = cty))
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = cyl, y = cty))
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = displ, y = cty))
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = hwy, y = cty))
+```
+
+
+11. Make a linear model based on either your best pick in 10  or the second best pick if displ was best pick and graph it.
+11A. 
+```{r}
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = hwy, y = cty)) +
+  geom_smooth(mapping = aes(x = hwy, y = cty), method = "lm", se = 0)
+```
+
+
+12.Which of the models predicting hwy would you prefer to use and why?
+12A. I would use the locally estimated scatterplot smoothing method rather than the linear model method
+as it more closely follows the spread of data.
+```{r}
+hwyCtyLmModel = lm(cty~hwy, data = vehicles)
+hwyCtyLmModel
+
+hwyCtyLoessModel = loess(cty~hwy, data = vehicles)
+hwyCtyLoessModel
+```
+
+```{r}
+plot(hwyCtyLmModel)
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = hwy, y = cty)) +
+  geom_smooth(mapping = aes(x = hwy, y = cty), method = "lm", se = 0)
+```
+
+
+```{r}
+plot(hwyCtyLoessModel)
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = hwy, y = cty)) +
+  geom_smooth(mapping = aes(x = hwy, y = cty), method = "loess", se = 0)
+```
+
+
+13.Choose a new pair of variables to make a linear model. The response variable must be quanitiative. Graph your model and give an equation.
+13A.y = (0.1391 * x) - 254.4613
+```{r}
+hwyYearModel = lm(hwy~year, data = vehicles)
+hwyYearModel
+
+hwyYearFunc = function(x){
+  (0.1391 * x) - 254.4613
+}
+```
+
+
+```{r}
+plot(hwyYearModel)
+
+ggplot(data = vehicles) + 
+  geom_point(mapping = aes(x = year, y = hwy)) +
+  geom_smooth(mapping = aes(x = year, y = hwy), method = "lm", se = 0)
+```
+
+
+14. How is the fit?
+14A. Considering the data presented, the fit is good - as we progress in time, generally cars are becoming
+more fuel efficient. 
+
+15. Make a prediction with your model.
+15A.
+```{r}
+hwyYearFunc(2030)
+```
+

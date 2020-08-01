@@ -1,0 +1,226 @@
+title: "Data Transformation with dplyr Exercises"
+author: "Hadley Wickham, Garrett Grolemund, and Johnathan Clementi"
+date: "2/23/2020"
+output: word_document
+---
+
+These are exercises based on the exercises in R for Data Science by Wickham and Grolemund.
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+# Data transformation {#transform}
+
+We will use the data set fueleconomy:vehicles
+```{r}
+library(tidyverse)
+library(fueleconomy)
+vehicles<-fueleconomy::vehicles
+```
+
+from https://cran.r-project.org/web/packages/fueleconomy/fueleconomy.pdf
+
+vehicles- 5 cat., 4 quant, 1 case id
+id Unique EPA identifier
+make Manufacturer 
+model Model name 
+year Model year
+class EPA vehicle size class, http://www.fueleconomy.gov/feg/ws/wsData.shtml#VClass trans Transmission
+drive Drive train
+cyl Number of cylinders
+displ Engine displacement, in litres fuel 
+Fuel type
+hwy Highway fuel economy, in mpg 
+cty City fuel economy, in mpg
+```{r}
+vehicles
+```
+```{r}
+count(vehicles, make)
+count(vehicles, model)
+count(vehicles, year)
+count(vehicles, class)
+count(vehicles, trans)
+count(vehicles, drive)
+count(vehicles, cyl)
+count(vehicles, displ)
+count(vehicles, fuel)
+count(vehicles, hwy)
+count(vehicles, cty)
+```
+
+### Exercises
+
+1.  Find all vehicles that
+
+    a. were made after 2010
+    b. were made by Ford or General Motors
+    c.  had 2-Wheel Drive or Front-Wheel Driv
+    d. had a manual transmition of any kind. 
+    e. had city miles per gallon above the highways miles per gallon.
+    f. had highway miles per gallon above 25 and less than 30.
+    g. had displacement between 1 and 5 (inclusive)
+
+1A.
+```{r}
+    #a.
+    filter(vehicles, year > 2010)
+    
+    #b. 
+    filter(vehicles, make == 'Ford' | make == 'General Motors')
+
+    #c.
+    filter(vehicles, drive == '2-Wheel Drive' | drive == 'Front-Wheel Drive')
+
+    #d.
+    filter(vehicles, grepl('Manual', trans))
+    
+    # Used grepl for regex insteal of typing out each name... which would look like:
+    
+    filter(vehicles, trans == 'Manual 3-spd' | trans == 'Manual 4-spd' | trans == 'Manual 5-spd' | trans == 'Manual 6-spd' | trans == 'Manual 7-spd' | trans == 'Manual(M7)')
+    
+    #e.
+    filter(vehicles, cty > hwy)
+    # Important: still contains NA values...
+
+    #f.
+    filter(vehicles, hwy > 25 & hwy < 30)
+
+    #g.
+    filter(vehicles, displ >= 1 & displ <= 5)
+```
+
+
+2.  Another useful dplyr filtering helper is `between()`. What does it do?
+    Can you use it to simplify the code needed to answer the previous 
+    part?
+    
+2A. The `between()` function filters data vector that fall between the left and right bounds (inclusive). It is useful for simplifying code.
+```{r}
+filter(vehicles, between(hwy, 26, 29))
+filter(vehicles, between(displ, 1, 5))
+```
+
+
+
+3.  How many cars have a missing `cyl`? What other variables are 
+    often missing with cyl? What might these rows represent?
+    
+3A. There are 58 cars in this list that do not have `cyl` values. These are mainly electric vehicles that do not have traditional combustion chambers (cylinders). However, the Mazda RX-7 and the Ford Ranger Pickups from 1999-2001 are not electric and are just missing the `cyl` values.
+```{r}
+filter(vehicles, is.na(cyl))
+```
+
+
+    
+4. Why is `NA ^ 0` not missing? Why is `NA | TRUE` not missing?
+    Why is `FALSE & NA` not missing? Can you figure out the general
+    rule?  (`NA * 0` is a tricky counterexample!)
+
+4A. `NA ^ 0` and `NA | TRUE` evaluate as `1` and `TRUE` respectively because they use an type of OR comparison operator, which ignores the presence of an unknown value. `FALSE & NA` evaluates as `FALSE`. I think the general rule is that when there is a comparison operator which allows us to 'ignore' the NA value.
+
+5.  How could you use `arrange()` to sort all missing values of cyl to the start?
+    (Hint: use `is.na()`).
+    
+5A. 
+```{r}
+arrange(vehicles, !is.na(cyl), cyl)
+```
+
+
+    
+6.  Sort `vehicles` to find the vehicles with the largest city miles per gallon. Also find the vehicles that had the lowest highway miles per gallon.
+
+6A. 
+Highest CTY mpg: 138
+Lowest HWY mpg: 9
+```{r}
+arrange(vehicles, desc(cty))
+
+arrange(vehicles, hwy)
+```
+
+
+
+7. Sort `vehicles` to find the vehicles with the largest number of cylnders.
+
+7A. 
+Largest number of cylinders: 16
+```{r}
+arrange(vehicles, desc(cyl))
+```
+
+
+8.  Which vehicles have the largest displacement? Which have the smallest?
+
+8A. 
+Largest displacement: 8.4
+Smallest displacement: 0.0? or 1.0
+```{r}
+arrange(vehicles, desc(displ))
+arrange(vehicles, displ)
+```
+
+
+    
+9.  Select all quantitative variables from `vehicles`.
+
+9A. cyl, displ, hwy, cty
+```{r}
+select(vehicles, cyl, displ, hwy, cty)
+```
+
+
+10. What does the `one_of()` function do? Rewrite the answer to the previous question using it. Hint: make sure the variable names are in "".
+    
+10A. The `one_of()` function selects column names from the whole data set.
+```{r}
+select(vehicles, one_of("cyl", "displ", "hwy", "cty"))
+```
+
+
+
+11. What happens if you include the name of a variable multiple times in
+    a `select()` call?
+    
+11A. dplyr will ignore a repeated variable parameter and only show the variable in the first position it was called (left to right)
+```{r}
+select(vehicles, cty, cyl, displ, hwy, cty, cty)
+```
+
+
+ 
+12. Make a new variable hwygpm where hwygpm=gallons per mile on the highway=1/hwy
+
+12A.
+```{r}
+vehicles2 = mutate(vehicles, hwygpm = 1/hwy)
+vehicles2
+```
+
+
+13. Make a new variable ctykpl where ctykpl=kilometers per liter in the city=0.42517*cty
+
+13A. 
+```{r}
+vehicles2 = mutate(vehicles2, ctykpl = 0.42517*cty)
+vehicles2
+```
+
+
+14. Make a new variable that is the dfference between hwy and cty.
+
+14A. 
+```{r}
+vehicles2 = mutate(vehicles2, mpgDif = hwy-cty)
+vehicles2
+```
+
+
+15. How many vehicles have a negative difference between hwy and cty? Any common features of some of the vehicles?
+
+15A. Vehicles with negative hwy/cty differentials tend to be electric vehicles which are less efficient in the stop-and-go of cities.
+```{r}
+arrange(vehicles2, mpgDif)
+```
+

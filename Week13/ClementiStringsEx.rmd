@@ -1,0 +1,130 @@
+---
+output:
+  word_document: default
+  html_document: default
+---
+title: "Strings  Exercises"
+author: "Kim Roth & Johnathan Clementi"
+date: "04/28/20"
+output: word_document
+---
+These are exercises based on  R for Data Science by Wickham and Grolemund. 
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+While not required I reccomend the regex crossword for practice
+https://regexcrossword.com
+
+```{r setup, message = FALSE}
+library(tidyverse)
+```
+
+1.  In code that doesn't use stringr, you'll often see `paste()` and `paste0()`.
+    What's the difference between the two functions? What stringr function are
+    they equivalent to? How do the functions differ in their handling of 
+    `NA`?
+    
+1A. `paste()` is different from `paste0()` in that they concatenate strings, but `paste()` allows for a seperator
+arguments to be included. They are equivilent to the `str_c()` function of stringr. Both `paste()` and `paste0()`
+deal with NA as a string, but `str_c` deals with NA as a missing value. 
+
+
+2.  Use  `str_sub()` to extract the second to last character from a string.
+```{r}
+x <- c("Apple", "Banana", "Pear")
+
+str_sub(x, -2, -2)
+```
+
+
+
+3.  What is the difference between `n`, `\n`, `\\n`, `\\\n`?
+`n` matches the character "n"
+`\n` matches a new line if put into a regex function
+`\\n` can be passed as a string to a regex function and will match a new line - `\\` will match a \ in a string
+`\\\n` if the first \ is an escape character for the second \, then the regex will match a \ before a new line. 
+
+
+
+ For 4-13 Given the corpus of common words in `stringr::words`, create regular
+    expressions that find all words that:
+```{r}
+head(words,5)
+```
+    
+4. Start with "q".
+```{r}
+str_subset(words, "^q")
+```
+
+5. End with "y"
+```{r}
+str_subset(words, "y$")
+```
+
+    
+6. Have five letters or more.
+```{r}
+str_subset(words, "[:alpha:]{5,}")
+```
+
+
+7. Start with a consontants.(Hint: thinking about matching "not"-vowels.)
+```{r}
+str_subset(words, "^[b-df-hj-np-tv-z]")
+```
+```{r}
+str_view(words,"^[^aeiou]", match=TRUE)
+```
+
+
+
+8. That only contain vowels. 
+```{r}
+str_subset(words, "^[aeiou]+$")
+```
+
+
+9. End with `ing`, but not with `ring`.
+```{r}
+str_subset(words, "[^r]ing$")
+```
+    
+
+    
+10. End with `ed` or `ly`.
+```{r}
+str_subset(words, "(ed|ly)$")
+```
+
+
+11. Start with two vowels.
+```{r}
+str_subset(words, "^[aeiou]{2}")
+```
+
+    
+12. Have three or more consontant in a row.
+```{r}
+str_subset(words, "[b-df-hj-np-tv-z]{3,}")
+```
+
+
+13. Have two or more consonant-vowel pairs in a row.
+```{r}
+str_subset(words, "([b-df-hj-np-tv-z][aeiou]){2,}")
+```
+
+
+14. Replace spaces in a string with _
+```{r}
+cars = tibble::rownames_to_column(mtcars,"Name")
+cars = head(cars, 35)
+```
+
+```{r}
+str_replace(cars$Name,"\\s","_")
+```
+
+

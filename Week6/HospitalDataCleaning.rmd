@@ -1,0 +1,160 @@
+---
+title: "Cleaning Data in R"
+author: "Kim Roth & Johnathan Clementi"
+date: "3/3/2020"
+output: pdf_document
+---
+
+Library load
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readxl)#for reading in excel files
+```
+
+
+The advantage of cleaning data in R rather than excel is that you have a replicable process should you ever wonder what you did when cleaning or need to change it.
+
+Most important tip when cleaning. Always keep the original data file. Always. This is fortunately the default in R.
+
+In case you need a reminder. The data set is data from JC Blair Hospital based on data they collect yearly at the Huntingdon County Fair about blood pressure and demographics from voluntary participation by fair attendees.  
+
+Upload the data file from moodle and then use File->Import Data Set-> from Excel. You'll need to change my code for this to work.
+
+```{r}
+
+Pressure <- read_excel("~/Documents/teaching/dataScienceIntro/Bloodpressuredata.xlsx")
+```
+
+
+
+Variables:
+OVERALL-a number assoiated with the case, essentially a case ID
+YEAR-What year was the data taked
+REC- a number associated with case and year. Essentially which entry was this for this year.
+BP-blood pressure as a ratio, systolic/diastolic
+BP Ratio-The blood pressure ratio converted to a decimal
+Systolic-The top number in blood pressure
+Diastolic-The bottom number in blood pressure.
+BP Status-Whether the blood pressure is Low, Normal, Pre-Hypertension, Hypertension
+Age-reported age of person survey
+Weight- measured weight of person in pounds
+Height- height measured in feet and inches
+Height-Inches-height measured in inches
+BMI-a ratio of sorts between height and weight
+BMI Category-a category based on BMI
+Gender-reported gender of participant
+Diagnosed Diabetic-report of the participant if ever diagnosed diabetic
+Tobacco User-report of the participant if they use tobacco
+OnmedicationforBP-report of the participant if they are on medication for high blood pressure
+HuntingdonCountyResident-is the participant a resident of Huntingdon County
+Date-Date data taken
+```{r}
+str(Pressure) #view variables and types
+```
+
+1. Which variable names have spaces or extra characters like -?
+
+
+We would prefer that the names of variables not have spaces (R can be obnoxious about that)
+
+Here is how to fix BP Status, to make the name "BPStatus". Using the pipe `%>%` is not required, but we will practice using the pipe throughout this file.
+
+
+```{r}
+Pressure=Pressure %>% 
+  rename( BPStatus=`BP Status`) #renames the variable. Note the use of the pipe
+str(Pressure) #checking results
+```
+
+2. What happens if we rerun the above code again for the second time? Why?
+
+
+3. You do the same for any other variables that have spaces in the names. Make sure to use the pipe whereever possible.
+
+
+4. Use select to remove the variable Height.
+
+
+
+Now let's consider one problem we found last time with Gender. For reference ggplot does not use pipe without using the ggpipe package.
+
+```{r}
+ggplot(Pressure)+geom_bar(aes(x=Gender))
+Pressure %>%
+count(Gender)
+```
+Now we can see some problems.
+
+a) f should be F
+
+b) N should be M (they are next to each other on the keyboard, it's a common typo)
+
+c)  N/A should be NA. 
+
+Here is one way to fix them, we will use the command ifelse along with mutate. The command works like ifelse(condition to test, what to do if true, what to do if false)
+
+```{r}
+Pressure=Pressure %>% 
+  mutate( Gender=ifelse(Gender=="f", "F", Gender)) #fixing the f to F
+Pressure %>%
+  count(Gender) #checking
+```
+You can nest the commands too if you want to fix more than one. You can also fix more than one variable at a time. Here is fixing the N and the N/A problem together.
+```{r}
+Pressure=
+  Pressure%>%
+  mutate(Gender=ifelse(Gender=="N", "M", ifelse(Gender=="N/A", NA, Gender))) 
+Pressure%>%
+count( Gender) #checking
+```
+
+
+5. Pick another categorical variable (I believe they all have something wrong, often multiple somethings). Examine the variable and then fix the problem(s). Use pipe whenever possible.
+
+
+
+Now that we know summarize, we will use it to summarize variables.
+```{r}
+Pressure %>%
+summarize(MaxSys=max(Systolic, na.rm=TRUE), MinSys=min(Systolic, na.rm=TRUE), MeanSys=mean(Systolic, na.rm=TRUE))
+```
+We will want to identify how many readings are unreasonable. For now, we will assume the systolic blood pressure reading is in a range where it wouldn't send a person to the hospital. That is between 80 (based on https://www.mayoclinic.org/diseases-conditions/low-blood-pressure/symptoms-causes/syc-20355465) and 190 (based on https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings) using 10 as a margin of error. Normally we would ask the client what levels they'd want removed.
+
+Here are the too high and too low ones. It is often worth looking at the outliers.
+```{r}
+Pressure %>%
+filter( Systolic>190|Systolic<80)
+```
+Here is an alternate method for looking too high or too low using arrange
+```{r}
+Pressure %>% 
+  arrange(Systolic)
+Pressure %>% 
+  arrange(desc(Systolic))
+```
+
+4.  Use ifelse and mutate to turn the unreasonable value(s) into an NA. Use pipe whenever possible.
+
+5. Check a different quantitative variable for errors. Filter for those rows and check the values vs others. You can graph the variable perhaps versus another variable to check as well. Use pipe whenever possible.
+
+
+6. Use ifelse to turn the unreasonable value(s) into an NA. Use pipe whenever possible.
+
+
+7. Find at least one more thing wrong with this data set. Record what you found, how you found it, and how to fix it if you can. Use pipe whenever possible.
+
+
+After all the data cleaning, you should output/export a new csv file. Why? Because data cleaning is often computationally intensive and should be kept in a seperate markdown file from the data analysis. I have written a new csv file. You'll need to adjust where the file goes as you adjusted at import.
+```{r}
+write.table(Pressure, "~/Documents/teaching/dataScienceIntro/CleanBloodpressuredata.csv", sep=",", row.names=FALSE)
+```
+
+8. Make a data set containing just people who identify as male using filter. Give the data set a name and export it as a csv file.
+
+
+
+
+
+
+
+

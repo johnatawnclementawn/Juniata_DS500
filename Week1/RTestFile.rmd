@@ -1,0 +1,48 @@
+---
+title: "R test file"
+author: "Kim Roth and ?"
+date: "6/24/2019"
+output:
+  word_document: default
+  html_document: default
+---
+
+This is an RMarkdown document(.Rmd) You should open it in Rstudio. If the document has downloaded with a .txt extension, delete the .txt and try opening it again.
+
+To check each section of this document, hit the play button on the right of the grey area, called a chunk.
+
+This chunk of code should run as long as you have both R and Rstudio installed. If it does not work, install R again.
+```{r}
+9/10
+summary(cars)
+```
+
+This chunk of code is to check that you have all of the libraries needed for class. If you are missing a library you will see an error like: Error in library(knitr) : there is no package called ‘knitr’
+
+Which means you need to install knitr. To to this go to Tools>Install Packages... and put the package name in the blank and click on the Install button.
+
+After doing that hit play again and see if all the packages are there now. When it works there will be no output. You may have to do several rounds of installation.
+
+The  \# parts are comments. They do not effect the runnning of commands.
+```{r, include=FALSE}
+library(tidyverse) #where ggplot is
+library(knitr) #for making word, pdf, or html files from rmd files
+library(readr) #for reading in csv files
+library(readxl) #for reading in excel files
+library(mosaic) #for some simplified commands
+
+#These packages are for data sets we will use eventually
+library(nycflights13)
+library(gapminder)
+library(Lahman)
+library(okcupiddata)
+library(fueleconomy)
+library(fivethirtyeight)
+```
+
+Now the code for today should work. For example we'll learn what this does.
+```{r}
+ggplot(data=cars)+geom_point( mapping = aes(x = speed, y = dist))
+```
+
+

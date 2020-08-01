@@ -1,0 +1,128 @@
+---
+title: "Introduction to Graphing with ggplot2"
+author: "Kim Roth"
+date: "9/30/2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+**Introduction**
+
+This is an RMarkdown document. It allows you type text amid your r commands without having to comment. It can produce professional level documents in html, word, or pdf. 
+
+This is an R chunk. It is like an embedded .R file. Hit the play button to evaluate. You can also hit shift+control+enter for PCs or shift+command+enter for macs.
+```{r}
+3+4
+sample=c(1,2,3,4)
+sample
+```
+
+Note the output is displayed in two places, in the markdown file and in the Console, althogh RStudio sometimes likes to hide the console.
+
+You can expand or contract your output by clicking on the ^^ symbol next to the x in the white output area.
+
+Two things to remember about programming in R.
+
+1. The computer will do exactly what you tell it to do. 
+2. Copy, paste, and edit is your good friend.
+
+Albert and Chester like to say instead
+1. Computers are stupid.
+2. Don't code from scratch.
+
+Now like many programming environments we have to load in a few things to use them here. In R we do this with the library()  command. Technically you have to install the packages before you load them, but we've done that already.
+
+
+```{r}
+library(tidyverse) #loads ggplot and the others
+
+simple_ex <-
+  data_frame(
+    A = c(1980, 1990, 2000, 2010),
+    B = c(1, 2, 3, 4),
+    C = c(3, 2, 1, 2),
+    D = c("low", "low", "high", "high")
+  ) #the example from class
+simple_ex #looking at the example data
+```
+
+**Graphs from simple_ex**
+Now let's make a graph starting with a set of axes, called the base layer
+```{r fig.height=2, fig.width=5}
+ggplot(data = simple_ex, mapping = aes(x = A, y = B)) #base layer, there is no graph here yet, just an x and y axis
+```
+
+
+
+Let's pick that commmand apart a bit.
+
+ggplot-calls ggplot
+data= tells what data set
+mapping= what variables we will graph (optional, can be omitted)
+aes is short for aesthetic
+
+Now let's make a scatterplot. A graph is a mapping of data variables to aestheic attributes to geometric object. The graph type is a geometric object. Scatter plots are geom_point. To add things to a graph use +. For formatting reasons it is best to end lines with +.
+
+There are two possible places to put the aesthetic information when you have a geom. Either in the ggplot part of the geom part. We will usually follow R for Data Science. Most of the time they are equivalent and you may use either. See below.
+```{r}
+ggplot(data = simple_ex) +geom_point(mapping=aes(x = A, y = B)) #R for Data Science Style
+ggplot(data = simple_ex, mapping = aes(x = A, y = B)) +geom_point() #Another Style
+
+```
+And there is our first graph.
+
+Now to color by D.
+
+```{r}
+ggplot(data = simple_ex) +geom_point(mapping=aes(x=A, y=B, color = D))
+```
+
+Now to do size by C.
+```{r}
+ggplot(data = simple_ex) + 
+  geom_point(mapping = aes(x = A, y = B, size = C))
+```
+
+Now color and size.
+```{r}
+ggplot(data = simple_ex) +geom_point(mapping = aes(x = A, y = B,size=C, color = D))
+```
+
+Line graphs use the geometry geom_line
+```{r}
+ggplot(data = simple_ex) + 
+  geom_line(mapping = aes(x = A, y = B))
+```
+
+Now coloring the line according to D and points blue of size 4. The coloring and sizing of the points goes inside the geom_point() command because it effects the points, but outside the aes() part becuase it is not messing with the variables.
+
+What will happen with the middle of the line?
+```{r}
+ggplot(data = simple_ex) + 
+  geom_line(mapping = aes(x = A, y = B,color = D)) +
+  geom_point(mapping=aes(x = A, y = B),color = "blue", size = 4)
+```
+
+When using more than one geom it is easier to put the aesthetics that are in common in the ggplot part.
+```{r}
+ggplot(data = simple_ex, mapping = aes(x = A, y = B,color = D)) + 
+  geom_line(mapping=aes(color = D)) +
+  geom_point(color = "blue", size = 4) #this gives the same graph.
+```
+**Notes**
+
+Common graph types
+
+- Scatterplot: `geom_point()`
+- Line graph: `geom_line()`
+- Histogram: `geom_histogram()`
+- Boxplot: `geom_boxplot()`
+- Bar graph: `geom_bar()`
+- Density plots: `geom_density()'
+
+
+You can find more on the ggplots cheatsheet.
+
+Now it is time for you to make your own graphs. Proceed to the file OKCupidMoreGgplot.Rmd

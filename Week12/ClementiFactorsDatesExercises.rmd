@@ -1,0 +1,224 @@
+---
+title: "Factors and Dates Assignment"
+author: "Kim Roth & Johnathan Clementi"
+date: "4/14/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+These are exercises based on the exercises in R for Data Science by Wickham and Grolemund.
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+
+
+```{r}
+library(tidyverse)
+gss_cat #our data set for the first part. See the book for details
+gssCopy = gss_cat # Make copy for edititing
+```
+
+#Factors
+
+1.  Explore the distribution of `partyid` (reported political party preference). What is the default order of factors? Make a plot with reordered factors.  Describe what your best graph tells you about `partid`.
+1A. 
+Default order: No answer, Don't Know, Other party, Strong republican, Not str republican, Ind, near rep,
+Independent, Ind, near dem, Not str democrat, Strong democrat
+
+
+```{r}
+count(gss_cat, partyid)
+
+gssCopy = mutate(gssCopy, partyid = factor(partyid, levels = c("Strong democrat", "Not str democrat", "Ind,near dem", "Independent", "Ind,near rep", "Not str republican", "Strong republican", "Other party", "Don't know", "No answer")))
+
+count(gssCopy, partyid)
+```
+
+
+Load ColorBrewer
+```{r}
+### Load the package or install if not present
+if (!require("RColorBrewer")) {
+install.packages("RColorBrewer")
+library(RColorBrewer)
+}
+```
+
+1A(pt2). This figure shows the distribution of political party affiliation amoung people sampled in the GSS. 
+There seem to be more people that identify as Democrat (and not strong democrat) than identify as Republican
+(or not strong republican). I filtered out 3rd party, Don't know, and didn't answer data to get the color ramp
+to fit well with the Democrat - Republican (Left - Right) spread.
+```{r}
+ggplot(data = filter(gssCopy, partyid != "No answer" & partyid != "Don't know" & partyid != "Other party")) +
+  geom_bar(mapping = aes(x = partyid, fill = partyid, color = 'black')) +
+  scale_fill_brewer(palette = "RdBu", direction = -1) +
+  labs(x = "Party Affiliation") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+    
+    
+
+
+2.What is the most common `denom` in this survey? What's the most common `marital`?
+2A. Most common `denom` is "Not applicable"; most common `marital` is "Married"
+```{r}
+denomCount = count(gssCopy, denom)
+denomCount = arrange(denomCount, desc(n))
+denomCount
+
+maritalCount = count(gssCopy, marital)
+maritalCount = arrange(maritalCount, desc(n))
+maritalCount
+```
+
+
+    
+    
+3.  Examine the distribution of `age`. Are there any surprises about the distribution? Would you prefer to use the mean or the median to summarize `age`?
+3A. The distribution is strange - there seem to be short boom and busts between age classes, that
+almost make the figure look like a hand with too many fingers. I'm not sure what would cause this.
+I'd prefer the median over the mean: the 1st and 3rd Standard deviations are equal distance from 
+the median (13), whereas they are different values when using the mean. Additionally, the median 
+is a whole number (age is traditionally measured in whole years).
+
+```{r}
+ggplot(data = gssCopy) +
+  geom_histogram(mapping = aes(x = age))
+
+summary(gssCopy$age, na.rm = TRUE)
+```
+
+4. For `rincome`, what order are the factors in? Is this a useful order?
+4A. Order of factors: No answer, Don't know, Refused, $25000 or more, $20000 - 24999, $15000 - 19999,
+$10000 - 14999, $8000 to 9999, $7000 to 7999, $6000 to 6999, $5000 to 5999, $4000 to 4999, $3000 to 3999,
+$1000 to 2999, Lt $1000, Not applicable
+
+The order is useful for all of the numeric ranges. However, the first three factors: "No answer, Don't know, Refused" should be moved to the bottom of the factor list.
+```{r}
+count(gssCopy, rincome)
+```
+
+5.  For each factor in `gss_cat` identify whether the order of the levels is arbitrary or principled.
+5A.
+marital: arbitrary
+race: principled
+rincome: principled
+partyid: principled
+relig: arbitrary
+denom: principled
+
+```{r, eval = FALSE}
+count(gssCopy, marital)
+count(gssCopy, race)
+count(gssCopy, rincome)
+count(gssCopy, partyid)
+count(gssCopy, relig)
+count(gssCopy, denom)
+```
+    
+6.  How could you collapse `partyid` into a small set of categories? Collapse `partyid` into a small set of categories.
+6A. I would collapse into 4 categories: Democrat, Independent, Republican, Other
+```{r}
+gssCopy = gssCopy %>%
+  mutate(partyid = fct_collapse(partyid,
+         Democrat = c("Strong democrat", "Not str democrat"),
+         Independent = c("Ind,near dem", "Independent", "Ind,near rep"),
+         Republican = c("Strong republican", "Not str republican"),
+         Other = c("No answer", "Don't know", "Other party")
+  ))
+
+count(gssCopy, partyid)
+```
+
+
+7. Use fct_lump to collapse marital. What got lumped together and why?
+7A.`No answer`, `Seperated`, and `Widowed` were all lumped together because they were the three factors
+with the lowest counts (least common)
+```{r}
+count(gssCopy, marital)
+
+gssCopy = gssCopy %>%
+  mutate(marital = fct_lump(marital))
+
+count(gssCopy, marital)
+```
+
+
+#Dates
+
+```{r}
+library(lubridate) #unlike most of the tidyverse libraries, this must be called seperately.
+```
+8.  What happens if you parse a string that contains invalid dates?
+8A. Lubridate throws an `failed to parse` error
+    ```{r, eval = FALSE}
+    ymd(c("2020-01-10", "2020-13-41", "date"))
+    ```
+
+
+
+9.  Use the appropriate lubridate function to parse each of the following dates or date-times:
+
+    ```{r}
+    d1 <- "Apr 14, 2020"
+    d2 <- "2001-21-02"
+    d3 <- c("14-01-2021", "15-02-2021")
+    d4 <- "01/31/2017 08:01 EST"
+    d5 <- "2022-12-31 23:59:59"
+    ```
+9A.
+```{r}
+d1=mdy(d1)
+d2=ydm(d2)
+d3=dmy(d3)
+d4=mdy_hm(d4, tz = "America/New_York")
+d5=ymd_hms(d5)
+d1
+d2
+d3
+d4
+d5
+```
+
+
+10. Figure out how old you are in years exactly using R.
+10A.
+```{r}
+JMCBirthday = ymd_hm("1996-05-12 16:11 EST", tz = "America/New_York")
+JMCAge = now() - JMCBirthday
+as.duration(JMCAge)
+```
+
+
+11.  Why is there `months()` but no `dmonths()`?
+11A. The smallest unit of time in a duration is the second. For each d*unit (second, minute, hour, etc),
+there is a known number of seconds in each of those units. Because months are variable in their length,
+the duration in seconds for each month is not constant.
+
+
+12.  Explain `days(overnight * 1)` to someone who has just started 
+  learning R. How does it work?
+12A. To account for periods that exist in multiple days (i.e. a person begins traveling on Sunday and
+arrives at their destination on Monday), we must tell R which direction to calculate the time difference,
+so it does not result in a negative time value (when departure time is greater than arrival time).
+
+
+13.  Create a vector of dates giving the first day of every month in the current year.
+13A. 
+```{r}
+firstDay = floor_date(today(), "year")
+firstDayList = seq.Date(firstDay, (firstDay + years(1)), "month")
+firstDayList
+```
+
+
+
+14.  Why can't `(today() %--% (today() + years(1)) / months(1))` work?
+14A. This is only counting the number of first day of every month (12), it does not create the date
+and append it to a list. 
+
+15. Give at least one example that makes working with time zones difficult.
+15A. There are some locations which fall in the same time zone but have different policies on observing day-light-savings time, time calculations may need extra care in those cases.

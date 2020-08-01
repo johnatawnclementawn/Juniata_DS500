@@ -1,0 +1,81 @@
+title: "Strings  Exercises"
+author: "Kim Roth"
+date: "12/12/2019"
+output: word_document
+---
+These are exercises based on  R for Data Science by Wickham and Grolemund. 
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+While not required I reccomend the regex crossword for practice
+https://regexcrossword.com
+
+```{r setup, message = FALSE}
+library(tidyverse)
+```
+
+
+1.  In code that doesn't use stringr, you'll often see `paste()` and `paste0()`.
+    What's the difference between the two functions? What stringr function are
+    they equivalent to? How do the functions differ in their handling of 
+    `NA`?
+1A.
+
+
+paste() and paste0() treat NA like a text string. str_c treats it like NA.
+
+2.  Use  `str_sub()` to extract the second to last character from a string.
+
+
+
+3.  What is the difference between `n`, `\n`, `\\n`, `\\\n`? 
+
+
+
+
+
+ For 4-13 Given the corpus of common words in `stringr::words`, create regular
+    expressions that find all words that:
+```{r}
+head(words,5)
+```
+    
+4. Start with "q".
+
+    
+5. End with "y"
+
+    
+  
+    
+6. Have five letters or more.
+
+7. Start with a consontants.(Hint: thinking about matching 
+       "not"-vowels.)
+
+
+8. That only contain vowels. 
+
+
+
+9. End with `ing`, but not with `ring`.
+    
+
+    
+10. End with `ed` or `ly`.
+
+
+
+11. Start with two vowels.
+
+    
+12. Have three or more consontant in a row.
+ 
+13. Have two or more consonant-vowel pairs in a row.
+
+
+
+14.   Replace spaces in a string with _
+
+

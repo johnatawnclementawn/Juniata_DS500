@@ -1,0 +1,259 @@
+---
+title: "Tidyr And Functions Exercises"
+author: "Kim Roth & Johnathan Clementi"
+date: "3/27/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+
+These are exercises based on the exercises in R for Data Science by Wickham and Grolemund.
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+
+
+We will use the data set fueleconomy:vehicles
+```{r}
+library(tidyverse)
+library(fueleconomy)
+vehicles<-fueleconomy::vehicles
+```
+
+Data for this file.
+```{r}
+vehicles
+```
+A subset for parts of the homework.
+```{r}
+hybridSubset=filter(vehicles, fuel=="Regular Gas and Electricity")
+hybridSubset=select(hybridSubset, make, model, year, hwy)
+hybridSubset
+```
+
+
+1.  Why are `gather()` and `spread()` not perfectly symmetrical?  
+    Carefully consider the following example:
+    
+```{r, eval = FALSE}
+
+hybridSubset
+    
+hybridSubset %>% 
+  spread(year, hwy) %>% 
+  gather("year", "hwy", `2012`:`2014`)
+```
+
+1A. `Gather` and `Spread` are not totally symmetric if there are instances of non-existant observations for all categories within all variables
+in the starting data, known as implicit NA. For instance, the original data here does not have an observation for the Ford C-MAX Energi Plug-in in 2012. 
+However, after spreading and then gathering, the observation is created and only has NA for the hwy reading. 
+
+
+2. Make the command from 1 give back the original data. You can use spread and gather or pivot_wider and pivot_longer.  
+2A.
+```{r}
+hybridSubset %>% 
+  spread(year, hwy) %>% 
+  gather("year", "hwy", `2012`:`2014`) %>%
+  filter(!is.na(hwy))
+```
+
+3. Why does spread or pivot_wider on this tibble fail? Why doesn't it fail on the full `hybridSubset`?
+
+```{r, eval=FALSE}
+hybridSubset2 = select(hybridSubset, year, make, hwy)
+
+hybridSubset2 %>%
+  spread(year, hwy)
+```
+3A. Spread or pivot_wider fails to spread this tibble because it cannot create a unique key for each new observation as it spreads
+
+
+4. Make a graph of the average hwy, cty, and displ with the original data set `vehicles`. Use the example in the videos to help you.
+4A.
+```{r}
+mpgDispl = select(vehicles, make, model, year, hwy, cty, displ)
+  
+mpgDispl = mpgDispl %>%  
+  pivot_longer(c("hwy", "cty", "displ"), names_to = "mpg", values_to = "Average")
+
+ggplot(data = mpgDispl) +
+  geom_boxplot(aes(x = mpg, y = Average)) +
+  labs(x = "", y = "Measurement (miles per gallon)")
+```
+
+
+
+5. Use separate to split the displ variable into parts named integer and decimal using the data set `vehicles` (Yes this is a silly exercise, but the data set did not have a better option.)
+5A.
+```{r}
+vehicles = separate(vehicles, displ, into = c("displInt", "displDec"))
+```
+
+
+6. Use unite to combine the variables make and model into one column called car in the original data set, `vehicles`.
+6A.
+```{r}
+vehicles = unite(vehicles, car, make, model)
+```
+
+
+7. Give an example of an explict NA from `vehicles`. Give an example of a possible implicit NA from `vehicles `.
+7A. Explicit NA: hwy, cty, and displ measurements for electric cars
+    Implicit NA: observations for cars that were not made during certain years in the study 
+    (i.e. car wasn't created until certian year, or car was discontinued after a certain year)
+
+
+8. Give an example of a data set (other than the one in the book) where using fill in data set is a good idea. Give an example of a data set where using fill is a bad idea.
+8A. A good candidate data set for using fill on is one that has many redundant observations. Using fill on a data set with many unique observations in succession
+could introduce a lot of bad data.
+
+ 
+9.  Why is `TRUE` not a parameter to `rescale01()` from the reading? What would happen if
+    `x` contained a single missing value, and `na.rm` was `FALSE`? 
+9A. The function rescales a series of numbers to a scale from 0 to 1. The parameters being passed to the function are numeric, not boolean (which `TRUE` is).
+    The missing value would be ignored by the function.
+    
+```{r}
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01(c(0, NA, 10))
+```
+    
+
+10. Write a function that calculates the product of two numbers. Test your function on some values.
+10A.
+```{r}
+prdct = function(x, y){
+  x * y
+}
+
+prdct(4,4)
+prdct(5,5)
+prdct(6,6)
+```
+
+
+11.  Practice turning the following code snippets into functions. Think about 
+    what each function does. What would you call it? How many arguments does it
+    need? 
+
+  
+    `sum(x>10,na.rm=TRUE)/sum(!is.na(x))`
+    
+   `median(x, na.rm = TRUE)`
+    
+  `mean(x)/ sd(x)`
+11A.
+```{r}
+#This function takes a vector and calculates the sum of all numbers greater than 10 divided by the sum of all of the numbers in the vector
+greaterThanTen = function(x){
+  sum(x>10, na.rm = TRUE)/sum(!is.na(x))
+}
+
+# This function calculates the median of a set of numbers (provided in the form of a vector)
+calculateMedian = function(x){
+  median(x, na.rm = TRUE)
+}
+
+# If the coefficient of variation is the standard deviation over the mean, then this function is the inverse coefficient of variation
+inverseCV = function(x){
+  mean(x) / sd(x)
+}
+
+```
+
+
+Here is some data to test it on.
+```{r}
+test1=c(1,2,3,4)
+test2=c(0,5,10,15,20)
+test3=c(-3,0,3,6,9,12,15,18,21)
+test4=c(1,0,100, NA, -1000)
+
+greaterThanTen(test1)
+greaterThanTen(test2)
+
+
+calculateMedian(test1)
+calculateMedian(test2)
+
+inverseCV(test1)
+inverseCV(test2)
+```
+
+
+12.  Write a function that takes in a vector and outputs the percentage of the vector that is NA.
+12A.
+```{r}
+pctNA = function(x, count = 0){
+  for(y in x) {
+    if(is.na(y)) {
+      count = count + 1
+    } else {}
+  }
+  count/(length(x))
+}
+```
+
+```{r}
+pctNA(test1)
+```
+
+
+
+13.  Write `same_mean()`, a function that takes two vectors and returns if they have the same mean or not.
+13A.
+```{r}
+same_mean = function(x, y){
+  if(mean(x) == mean(y)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+```
+
+```{r}
+same_mean(test1, test2)
+same_mean(test1, test1)
+```
+
+
+
+14.  What do the following functions do?
+14A. path = the working directory of the current R script
+     combine = concatenate x and y strings without space between them
+    
+    ```{r}
+    path <- function() getwd()
+    combine <- function(x,y) paste0(x, y)
+    ```
+
+
+15. Read the source code for each of the following three functions, puzzle out
+    what they do, and then brainstorm better names.
+ 
+    ```{r}
+    f1 <- function(string, prefix) {
+      substr(string, 1, nchar(prefix)) == prefix
+    }
+    f2 <- function(x) {
+      if (length(x) <= 1) return(NULL)
+      x[-length(x)]
+    }
+    f3 <- function(x, y) {
+      rep(y, length.out = length(x))
+    }
+    ```
+15A.
+f1 determines if `string` has a `prefix` at the start of the character vector. It could be renamed testForPrefix
+
+f2 removes the last element of a vector. It could be renamed rmvLstElement
+
+f3 replicates or truncates the second vector (y) so that it is the same length as the first vector (x). It could be renamed lengthAdjustor 
+

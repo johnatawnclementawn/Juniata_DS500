@@ -1,0 +1,137 @@
+---
+title: "Exploring Data in R"
+author: "Kim Roth & Johnathan Clementi"
+date: "2/16/2020"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+Library load
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readxl)#for reading in excel files
+```
+
+Today we will import data and explore it to prepare for cleaning.
+
+The advantage of cleaning data in R rather than excel is that you have a replicable process should you ever wonder what you did when cleaning or need to change it.
+
+Most important tip when cleaning. Always keep the original data file. Always. Fortunately that's the default in R, although you can export the edited data.
+
+The data set is data from JC Blair Hospital, now known as Penn Highlands Huntingdon, based on data they collect yearly at the Huntingdon County Fair about blood pressure and demographics from voluntary participation by fair attendees. 
+Upload the data file from moodle and then use File->Import Data Set-> from Excel. You'll need to change my code for this to work. My reccomendation is to copy and paste the code you get from File->Import Dataset->From Excel. It is in the lower right hand corner and labeled Code Preview. You only need the middle line from the code, the one that resembles the code in the chunk nelow.
+
+
+```{r}
+
+Pressure <- read_excel("C:/Users/Johnathan/Google Drive/Grad School/Juniata_DataScience/DS500/Week4/data/Bloodpressuredata.xlsx")
+```
+
+Note that this loads the file as a data frame(technically a tibble) in R. Anything you do to the data in R will not effect this file unless you specifically overwrite it.
+
+Note that the error message from R at the load indicates there may be some problems. In fact it indicates that R got rid of a value in line 3553 which was someone who listed their age as `Too old`
+
+You could use View to look at the data frame, but this is a bit large of a file to do that effectively.
+
+Variables:
+OVERALL-a number assoiated with the case, essentially a case ID
+YEAR-What year was the data taked
+REC- a number associated with case and year. Essentially which entry was this for this year.
+BP-blood pressure as a ratio, systolic/diastolic
+BP Ratio-The blood pressure ratio converted to a decimal
+Systolic-The top number in blood pressure
+Diastolic-The bottom number in blood pressure.
+BP Status-Whether the blood pressure is Low, Normal, Pre-Hypertension, Hypertension
+Age-reported age of person survey
+Weight- measured weight of person in pounds
+Height- height measured in feet and inches
+Height-Inches-height measured in inches
+BMI-a ratio of sorts between height and weight
+BMI Category-a category based on BMI
+Gender-reported gender of participant
+Diagnosed Diabetic-report of the participant if ever diagnosed diabetic
+Tobacco User-report of the participant if they use tobacco
+OnmedicationforBP-report of the participant if they are on medication for high blood pressure
+HuntingdonCountyResident-is the participant a resident of Huntingdon County
+Date-Date data taken
+
+
+```{r}
+Pressure
+str(Pressure) #view variables and types
+```
+
+1. Looking at the output of the str command, does it appear that the numerical data is all treated as numbers? Why or Why not? 
+1A. No, there are Null values that are marked by 'NA'. The Height field is also treated as text, but should be numerical. 
+
+
+Let's look at the cateorgical variables for what is wrong. The first places to start are graphing the variables and summarizing them. You really only need to do one of these, but it is fine to do both.
+
+Here is one way to summarize a categorical variable a table of counts, called a one way table
+```{r}
+count(Pressure, Gender)
+```
+
+
+2. Graph Gender and look at both the graph and the table. What's wrong that we need to fix.
+2A. There are multiple values that represent the same category of case/record - i.e. f and F mark Female; N/A and NA 
+```{r}
+count(Pressure, Gender)
+ggplot(data=Pressure) + geom_bar(mapping = aes(x = Gender))
+```
+
+
+
+
+3. Pick another categorical variable (one without spaces in the variable name, as that causes problems). Repeat graphing and making a table. What seems to be wrong here?
+3A. There are multiple values that represent the same category of case/record - i.e. f and F mark Female; N/A and NA.  
+```{r}
+count(Pressure, DiagnosedDiabetic)
+ggplot(data=Pressure) + geom_bar(mapping = aes(x = DiagnosedDiabetic))
+```
+
+For quantitative variables, we can summarize with the summary command. Here it is for age. It is an old command and we will learn about using the more modern summarize later.
+```{r}
+summary(Pressure$Age)
+```
+
+
+4. Make a graph of Age. Look at the graph and the summary statistics above. What stands out? Do you think something is wrong.
+4A. There are 43 NA values that are not graphed. Its also a little strange to be taking the blood pressure of a 3 year old. 
+```{r}
+ggplot(data = Pressure) + geom_freqpoly(mapping = aes(x = Age))
+```
+
+
+
+5. Pick another quantitative variable (one without spaces in the variable name, as that causes problems). Repeat graphing and summarizing. What seems to be wrong here? 
+5A. THere are 404 NA's, that's a lot of people to not record weight data for. 
+```{r}
+summary(Pressure$Weight)
+```
+
+```{r}
+ggplot(data = Pressure) + geom_freqpoly(mapping = aes(x = Weight))
+```
+
+
+
+6. Graph Age vs. Weight.  Look for unusual values, called outliers. Do they seem okay to you?
+6A. There is one outlier age around 54 weight is about 25 lbs. This is a value that should be removed from analysis if not enough context is available to fix it. 
+```{r}
+ggplot(data = Pressure) + geom_point(mapping = aes(x = Age, y = Weight))
+```
+
+
+
+7. Pick another pair of  quantitative variables (one without spaces in the variable name, as that causes problems). Repeat graphing. What seems to be wrong here?
+7A. There is an incorrect value in the systolic field - outlier >800. BMI is calculated using height and weight. Therefore, if either of those fields does not have a value, we cannot calculate the BMI for that individual. It is worth checking that BMI has been calculated for all records because there are so man NA values (n=1466).
+```{r}
+summary(Pressure$BMI)
+summary(Pressure$Systolic)
+ggplot(data = Pressure) + geom_point(mapping = aes(x = Systolic, y = BMI))
+```
+
+
+

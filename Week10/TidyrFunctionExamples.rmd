@@ -1,0 +1,130 @@
+---
+title: "Tidyr and functions examples"
+author: "Kim Roth & Johnathan Clementi"
+date: "3/25/2020"
+output: pdf_document
+---
+Loading libraries
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readr)#for reading in files
+```
+
+Loading the Summer Read Data
+Loading data. 
+```{r, message=FALSE}
+SummerRead <- read_csv("C:/Users/Johnathan/Google Drive/Grad School/Juniata_DataScience/DS500/Week10/SummerRead.csv")
+SummerRead=select(SummerRead, Book, Year, EnjoyBook, Think, Challenge, WhyNotRead ) #lowering the number of variables for ease.
+```
+
+#Using gather/pivot_longer
+
+Summer Read has several variables EnjoyBook, Think, Challenge that were measured on a 1 to 5 scale with 5 being strongly disagree and 1 being strongly agree. We calulated the averages of each by Book.
+```{r value, echo=FALSE}
+sumValue<- group_by(SummerRead, Book) %>%
+  summarize(Enjoyment=mean(EnjoyBook,na.rm=TRUE),Thought=mean(Think,na.rm=TRUE), Challenge=mean(Challenge,na.rm=TRUE))
+sumValue
+```
+
+If we want to graph these variables together, that is each of the variables for each of the books, we need to make the data longer. That is have the averages be the values with catgories of average of what and book. This will make the data longer as you are gathering together 3 columns of values into one column.
+
+Since gather is in the book, but in the process of being retired from tidyr, I will do this example twice, once with gather and once with pivot_longer
+
+##gather
+```{r}
+sumValueG=gather(sumValue, Enjoyment, Thought, Challenge, key="Type", value="Average")
+sumValueG
+```
+
+##pivot_longer
+```{r}
+sumValueP=pivot_longer(sumValue, c("Enjoyment", "Thought", "Challenge"), names_to="Type", values_to="Average")
+sumValueP
+```
+
+
+Generally gather(data, key, value, x,y,z...) is the same as pivot_longer(data, c(x,y,z,...), names_to="key", values_to="value")
+
+Now to make the graph. Does not matter which of the two you use. The slashes are to make the quotation marks show and the part labeled theme is to make the x axis text not overlap.
+```{r}
+ggplot(data=sumValueP)+  geom_bar(mapping=aes(x=Book,y=Average,fill=Type ), stat="identity", position="dodge")+labs(title="Agreement with \"The book provided ...\" ", y="Average Agreement", legend="Type of Value")+theme(text = element_text(size=8))
+```
+
+#spread/pivot_wider()
+
+If you want to break things back up again, use spread/pivot_wider. Make sure to read the other uses of these in the book.
+```{r}
+spread(sumValueP, Type, Average)
+pivot_wider(sumValueP, names_from="Type", values_from="Average")
+```
+
+In general spread(data, key, value) is pivot_wider(data, names_from="key", values_from="value")
+#Seperate and unite
+
+Seperate breaks up columns by any text that is not a number of a letter
+Here is a column that could use some breaking up.
+```{r}
+WhyNot=select(SummerRead, WhyNotRead)
+WhyNot
+```
+Really we'd like to break this up into separate variable for each option, but for now let's just break it into separate columns in preperation. Note we have to give names to the new columns and becuase we do not want to seperate at spaces, we have to specify to seperate with the commas only.
+
+##seperate
+```{r}
+separate(WhyNot, WhyNotRead, into=c("Reason1", "Reason2", "Reason3", "Reason4"),sep=",")
+```
+
+##unite
+The columns Book and Year both indicate what year the data was from. Let's combine them with unite 
+```{r}
+SummerRead=unite(SummerRead, Survey, Book, Year )
+SummerRead
+```
+
+#Functions
+
+Functions do various things.
+
+Here's one that takes in a measurement and the actual real value and computes relative error=(measurement-real)/real
+
+```{r}
+relErr<-function(m, r){
+  (m-r)/r
+}
+```
+
+Now you can call the function on some values
+```{r}
+relErr(3,5)
+relErr(7, 3)
+relErr(5,3)
+```
+You can check these for reasonableness using the formula
+```{r}
+(3-5)/5
+(7-3)/3
+(5-3)/3
+```
+
+You can input things other than numbers. Whatever you'd like actually.  Here is a function that takes in a column of numbers and changes them to standardized values called z scores. 
+z= (value-mean)/standardDeviation
+```{r}
+z<-function(x){
+  (x-mean(x,na.rm=TRUE))/sd(x, na.rm=TRUE)
+}
+```
+
+Call it on some columns
+```{r}
+SummerRead
+```
+Calling
+```{r}
+z(SummerRead$EnjoyBook) # remember the  $ says use this column
+```
+Checking first non-NA entry
+```{r}
+(2-mean(SummerRead$EnjoyBook, na.rm=TRUE))/sd(SummerRead$EnjoyBook, na.rm=TRUE)
+```
+
+Looks good.

@@ -1,0 +1,190 @@
+---
+title: "Visualization Exercises"
+author: "Kim Roth & Johnathan Clementi"
+date: "2/3/2020"
+output: word_document
+---
+
+These are slightly modified exercises from parts of the Visualization Chapter in R for Data Science by Wickham and Grolemund. 
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+
+```{r setup}
+library(tidyverse)
+```
+
+ To add more r chunks to this document you can either pick R from the Insert menu or hit option-command-I(mac) or control-alt-I(pc)
+### Exercises
+
+
+
+1.  How many rows are in `diamonds`? How many columns?
+```{r}
+?diamonds
+```
+1A. There are 53940 rows and 10 columns in the `diamonds` dataset.
+
+2.  What does the `carat` variable describe?  Read the help for `?diamonds` to find
+    out. You could also type diamonds in the search bar on the help tab in the Tools window.
+    
+2A. The `carat` variable describes the weight of the diamond (with a range of 0.2 - 5.01). 
+
+     
+3.  Make a scatterplot of `price` vs `carat`.
+
+3A.
+```{r}
+ggplot(data = diamonds) + geom_point(aes(x = price, y = carat))
+```
+
+
+4.  What happens if you make a scatterplot of `cut` vs `color`? Why is
+    the plot not useful?
+    
+4A. This figure is not useful because it plots two unrelated categorical variables against eachother.
+```{r}
+ggplot(data = diamonds) + geom_point(aes(x = cut, y = color))
+
+```
+
+
+5.  What's gone wrong with this code? Why are the points not square?
+    ```{r}
+    ggplot(data = diamonds) + 
+      geom_point(mapping = aes(x = x, y = y, shape="square"))
+    ```
+    
+5A.    
+    The code should be as follows, ensuring that the shape tag is outside of the aes tag
+    ```{r} 
+    ggplot(data = diamonds) + 
+      geom_point(mapping = aes(x = x, y = y), shape = "square")
+    ```
+
+    
+6.  Which variables in `diamonds` are categorical/discrete? Which variables are quantiative/continuous? (Hint: type `?diamonds` or type diamonds in the search bar on the help tab in the Tools window to read the documentation for the dataset). How can you see this information when you run `diamonds`?
+
+6A. 
+  Price: continuous; 
+  Carat: continuous; 
+  Cut: categorical; 
+  color: categorical; 
+  Clarity: categorical; 
+  x: continuous; 
+  y: continuous; 
+  z: continuous; 
+  Depth: continuous; 
+  Table: continuous; 
+  Table: continuous
+
+  When 'diamonds' is run in the console, the data type of the variables is displayed at the top of the column - In      this case, <ord> indicates ordinal (categorical) data, and <dbl> and <int> indicate numeric (continuous) data types.
+
+
+
+7.  Map a continuous variable to `color`, `size`, and `shape`. How do
+    these aesthetics behave differently for categorical vs. continuous
+    variables? 
+    
+7A. ggplot can visualize color and size aesthetics for continuous variables on the fly, meaning that it defines a spectrum of color or size for the variable to be visualized by. In the case of assigning shape to a continuous variable, shape is not something that can be mapped on a spectrum, and therefore cannot be used to visualize continuous data.
+```{r, eval=FALSE}
+    # Price by Color
+    ggplot(data = diamonds) + geom_point(aes(x = price, y = carat, color = price))
+
+    # Price by Size
+    ggplot(data = diamonds) + geom_point(aes(x = price, y = carat, size = price))
+    
+    # Price by Shape
+    ggplot(data = diamonds) + geom_point(aes(x = price, y = carat, shape = price))
+```
+
+
+    
+8.  What happens if you map the same variable to multiple aesthetics? 
+
+8A. In some cases, this can enhance the figure. In the example below, It is easier to decipher the carat difference of diamonds at the higher price range because of the color difference.
+
+```{r, eval=FALSE}
+    ggplot(data = diamonds) + geom_point(aes(x = price, y = carat, color = price, size = price))
+```
+
+
+    
+9.  What happens if you map an aesthetic to something other than a variable 
+    name, like `aes(colour = depth < 60)`?  Note, you'll also need to specify x and y.
+    
+9A. In this case, it will create a binary coloring system - one color marks values that meet the criteria, one marks values that do not meet the criteria. 
+
+```{r, eval=FALSE}
+ggplot(data = diamonds) + geom_point(aes(x = price, y = carat, colour = depth < 60))
+```
+
+ 
+    
+10.  What happens if you facet on a continuous variable?
+
+10A. If a continuous variable is used for a facet, ggplot will create a subplot for each value based on significant figures provided.
+
+```{r}
+ggplot(data = diamonds) + geom_point(aes(x = price, y = carat)) +
+  facet_wrap(~ x)
+```
+
+
+
+11.  What does the `se` argument to `geom_smooth()` do?
+
+11A. The `se` argument is a Boolean argument that determines if the confidence intervals are displayed on a figure or not.
+
+
+
+12.  Will these two graphs look different? Why/why not?
+
+12A. These graphs will look the same because the x and y variables are the same for the aes, point, and smooth arguments. 
+
+    ```{r, eval = FALSE}
+    ggplot(data = diamonds, mapping = aes(x = depth, y = table)) + 
+      geom_point() + 
+      geom_smooth()
+    
+    ggplot() + 
+      geom_point(data = diamonds, mapping = aes(x = depth, y = table)) + 
+      geom_smooth(data = diamonds, mapping = aes(x = depth, y = table))
+    ```
+
+
+
+13.  What plots does the following code make? What does `.` do? 
+
+13A. The following plots are different uses of facets. The '.' operator is a place holder which tells ggplot not to facet in a row or column dimension (depending on argument order)
+
+    ```{r, eval=FALSE}
+     ggplot(data = diamonds) + 
+      geom_point(mapping = aes(x = depth, y = table)) +
+      facet_wrap(cut ~ .)
+    
+    ggplot(data = diamonds) + 
+      geom_point(mapping = aes(x = depth, y = table)) +
+      facet_grid(cut ~ .)
+    
+    ggplot(data = diamonds) + 
+      geom_point(mapping = aes(x = depth, y = table)) +
+      facet_grid(. ~ color)
+    ```
+
+
+
+14.  Read `?facet_wrap` or type `facet_wrap` in the search bar on the help tab in the Tools window. What does `nrow` do? What does `ncol` do? What other
+    options control the layout of the individual panels? Why doesn't
+    `facet_grid()` have `nrow` and `ncol` arguments?
+    
+14A. The ncol argument is the number of columns in a facet_wrap. There is also an nrow, which controls the number of rows in a facet_wrap. These arguments are not used in facet_grids because facet grids are meant to have two variables displayed in rows and columns.
+
+
+
+15.  When using `facet_grid()` you should usually put the variable with more
+    unique levels in the columns. Why?
+    
+15A. It will be easier to view in column form than in a row form (books/documents/webpages are usually in portrait view).
+    
+ 

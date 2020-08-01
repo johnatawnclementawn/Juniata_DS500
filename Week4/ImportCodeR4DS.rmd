@@ -1,0 +1,341 @@
+---
+title: "R For Data Science Workflow:Scripts Code"
+author: "Wickham and Grolemund"
+date: "6/25/2019"
+output: word_document
+---
+
+This is most of the code as it appears in R for Data Science by Wickham and Grolemund. While I have added a few comments about what appears, no changes have been made.
+
+
+The website where the book appears is (and will always be) __free to use__, and is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivs 3.0](http://creativecommons.org/licenses/by-nc-nd/3.0/us/) License.
+# Data import
+
+## Introduction
+
+### Prerequisites
+
+```{r setup, message = FALSE}
+library(tidyverse)
+```
+
+## Getting started
+
+
+```{r, message = TRUE}
+heights <- read_csv("data/heights.csv")
+```
+
+
+```{r}
+read_csv("a,b,c
+1,2,3
+4,5,6")
+```
+
+
+    
+    ```{r}
+    read_csv("The first line of metadata
+      The second line of metadata
+      x,y,z
+      1,2,3", skip = 2)
+    
+    read_csv("# A comment I want to skip
+      x,y,z
+      1,2,3", comment = "#")
+    ```
+
+    ```{r}
+    read_csv("1,2,3\n4,5,6", col_names = FALSE)
+    ```
+  
+    
+    ```{r}
+    read_csv("1,2,3\n4,5,6", col_names = c("x", "y", "z"))
+    ```
+
+
+```{r}
+read_csv("a,b,c\n1,2,.", na = ".")
+```
+
+
+### Compared to base R
+
+
+## Parsing a vector
+
+
+```{r}
+str(parse_logical(c("TRUE", "FALSE", "NA")))
+str(parse_integer(c("1", "2", "3")))
+str(parse_date(c("2010-01-01", "1979-10-14")))
+```
+
+
+```{r}
+parse_integer(c("1", "231", ".", "456"), na = ".")
+```
+
+```{r}
+x <- parse_integer(c("123", "345", "abc", "123.45"))
+```
+
+
+```{r}
+x
+```
+
+
+```{r}
+problems(x)
+```
+
+
+### Numbers
+
+```{r}
+parse_double("1.23")
+parse_double("1,23", locale = locale(decimal_mark = ","))
+```
+
+
+
+```{r}
+parse_number("$100")
+parse_number("20%")
+parse_number("It cost $123.45")
+```
+
+```{r}
+# Used in America
+parse_number("$123,456,789")
+
+# Used in many parts of Europe
+parse_number("123.456.789", locale = locale(grouping_mark = "."))
+
+# Used in Switzerland
+parse_number("123'456'789", locale = locale(grouping_mark = "'"))
+```
+
+### Strings {#readr-strings}
+
+
+```{r}
+charToRaw("Hadley")
+```
+
+
+```{r}
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+
+x1
+x2
+```
+
+
+```{r}
+parse_character(x1, locale = locale(encoding = "Latin1"))
+parse_character(x2, locale = locale(encoding = "Shift-JIS"))
+```
+
+
+```{r}
+guess_encoding(charToRaw(x1))
+guess_encoding(charToRaw(x2))
+```
+
+### Factors {#readr-factors}
+
+
+```{r}
+fruit <- c("apple", "banana")
+parse_factor(c("apple", "banana", "bananana"), levels = fruit)
+```
+
+### Dates, date-times, and times {#readr-datetimes}
+
+
+    
+    ```{r}
+    parse_datetime("2010-10-01T2010")
+    # If time is omitted, it will be set to midnight
+    parse_datetime("20101010")
+    ```
+  
+    
+    ```{r}
+    parse_date("2010-10-01")
+    ```
+
+  
+    ```{r}
+    library(hms)
+    parse_time("01:10 am")
+    parse_time("20:10:01")
+    ```
+  
+```{r}
+parse_date("01/02/15", "%m/%d/%y")
+parse_date("01/02/15", "%d/%m/%y")
+parse_date("01/02/15", "%y/%m/%d")
+```
+
+
+
+```{r}
+parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+```
+
+
+
+## Parsing a file
+
+
+### Strategy
+
+
+```{r}
+guess_parser("2010-10-01")
+guess_parser("15:01")
+guess_parser(c("TRUE", "FALSE"))
+guess_parser(c("1", "5", "9"))
+guess_parser(c("12,352,561"))
+
+str(parse_guess("2010-10-10"))
+```
+
+
+### Problems
+
+```{r}
+challenge <- read_csv(readr_example("challenge.csv"))
+```
+
+
+```{r}
+problems(challenge)
+```
+
+
+
+```{r, eval = FALSE}
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_integer(),
+    y = col_character()
+  )
+)
+```
+
+
+```{r}
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_character()
+  )
+)
+```
+
+
+```{r}
+tail(challenge)
+```
+
+
+
+```{r}
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+tail(challenge)
+```
+
+
+
+### Other strategies
+
+
+   
+    ```{r}
+    challenge2 <- read_csv(readr_example("challenge.csv"), guess_max = 1001)
+    challenge2
+    ```
+
+   
+    ```{r}
+    challenge2 <- read_csv(readr_example("challenge.csv"), 
+      col_types = cols(.default = col_character())
+    )
+    ```
+    
+  
+
+    ```{r}
+    df <- tribble(
+      ~x,  ~y,
+      "1", "1.21",
+      "2", "2.32",
+      "3", "4.56"
+    )
+    df
+    
+    # Note the column types
+    type_convert(df)
+    ```
+    
+
+## Writing to a file
+
+
+
+```{r, eval = FALSE}
+write_csv(challenge, "challenge.csv")
+```
+
+
+```{r, warning = FALSE}
+challenge
+write_csv(challenge, "challenge-2.csv")
+read_csv("challenge-2.csv")
+```
+
+
+```{r}
+    write_rds(challenge, "challenge.rds")
+    read_rds("challenge.rds")
+```
+  
+    
+    ```{r, eval = FALSE}
+    library(feather)
+    write_feather(challenge, "challenge.feather")
+    read_feather("challenge.feather")
+    #> # A tibble: 2,000 x 2
+    #>       x      y
+    #>   <dbl> <date>
+    #> 1   404   <NA>
+    #> 2  4172   <NA>
+    #> 3  3004   <NA>
+    #> 4   787   <NA>
+    #> 5    37   <NA>
+    #> 6  2332   <NA>
+    #> # ... with 1,994 more rows
+    ```
+
+
+```{r, include = FALSE}
+file.remove("challenge-2.csv")
+file.remove("challenge.rds")
+```
+
+## Other types of data

@@ -1,0 +1,69 @@
+---
+title: "Modeling Summer Read"
+author: "Kim Roth"
+date: "8/7/2019"
+output: word_document
+---
+
+Today we will model the Summer Reading Program Data.
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+
+library(readr)#for reading in csv files. .
+```
+
+Data import. Make sure you use the new, cleaner data for this file. Ignore the lengthy error messages. It does fine in the end.
+```{r}
+SummerReadClean <- read_csv("C:/Users/clemenj/Google Drive/Grad School/Juniata_DataScience/DS500/Week11/SummerReadClean.csv")  
+```
+
+```{r}
+ggplot(data=SummerReadClean)+geom_point(mapping=aes(x=BooksReadSummer, y=PercentReadSummer))
+```
+
+
+Predicting PercentReadSummer
+```{r}
+model1=lm(PercentReadSummer~BooksReadSummer, data=SummerReadClean)
+model1
+```
+x
+
+Looking at model
+```{r}
+ggplot(data=SummerReadClean)+geom_point(mapping=aes(x=BooksReadSummer, y=PercentReadSummer))+geom_abline(mapping=aes(intercept=model1$coef[1], slope=model1$coef[2])) #this is the books method, par stands for parameter
+ggplot(data=SummerReadClean)+geom_point(mapping=aes(x=BooksReadSummer, y=PercentReadSummer))+geom_smooth(mapping=aes(x=BooksReadSummer, y=PercentReadSummer), method="lm",se=0) #my prefered method
+```
+Residual plots. We want the first one. Ignore the others
+```{r}
+plot(model1)
+```
+With a categorical variable
+```{r}
+count(SummerReadClean, Gender)
+ggplot(data=SummerReadClean)+geom_point(mapping=aes(y=PercentReadSummer, x=Gender))
+```
+Modeling with categories
+```{r}
+model2=lm(PercentReadSummer~Gender+BooksReadSummer, data=SummerReadClean)
+model2
+summary(model2)
+```
+Making predictions. Right now the hard way. Book way some other time.
+```{r}
+predictModel2 <-
+  data_frame(
+    Gender = c("Female", "Male", "Trans/NonBinary", NA),
+    PercentReadSummer = c(42.38, 52.38-12.25, 42.38-12.04, NA)
+  )
+```
+
+```{r}
+ggplot(data=SummerReadClean)+geom_point(mapping=aes(x=Gender, y=PercentReadSummer))+geom_point(data=predictModel2, mapping=aes(x=Gender, y=PercentReadSummer), color="blue",size=5)
+```
+Residuals, remember only the first graph.
+```{r}
+plot(model2)
+```
+
+Now it is your turn. Predict PercentReadSemester. What relationships are you curious about? Make a one and two  predictor models.  

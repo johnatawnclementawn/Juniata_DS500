@@ -1,0 +1,147 @@
+---
+title: "Factors and Dates Examples"
+author: "Kim Roth"
+date: "11/19/2019"
+output: pdf_document
+---
+
+Loading libraries
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readr)#for reading in files
+library(mosaic) #for tally
+```
+
+# Factors
+Loading the Summer Read Data
+Loading data. 
+```{r, message=FALSE}
+SummerRead <- read_csv("C:/Users/clemenj/Google Drive/Grad School/Juniata_DataScience/DS500/Week10/SummerRead.csv")
+SummerRead=select(SummerRead, Book, Year, Read, EnjoyBook, Think, Challenge, WhyNotRead, ConversationsCount ) #lowering the number of variables for ease.
+```
+
+When you graph with any of the categorical variables, they are treated as factors, that means they appear in alphabetical order.
+In particular for the SummerRead data set the books should be ordered by year not title in alphabetical order.
+
+
+```{r}
+tally(Year~Book, data=SummerRead)
+```
+
+```{r}
+ggplot(data=SummerRead)+geom_bar(mapping=aes(x=Book, fill=Read))
+```
+
+##changing factor order
+
+Changing factor order. We do this with a mutate rather than a graph because we want it for the data set as a whole, not just this graph.
+
+Using the methods from the beginning of the section on defining factors. The levels part is what determines the order.
+
+```{r}
+SummerRead=mutate(SummerRead, Book=factor(Book, levels=c("The Warriors","It's Complicated", "Little Brother", "Station Eleven", "Handmaid's Tale")))
+```
+
+Or you can order them by the Year variable using fct_reorder which expects numbers.
+```{r}
+SummerRead=mutate(SummerRead, Book=fct_reorder(Book, Year))
+```
+
+
+
+Either way you get this graph now, with the books in year order.
+```{r}
+ggplot(data=SummerRead)+geom_bar(mapping=aes(x=Book, fill=Read))
+```
+
+##dropping a factor
+
+Depending on the graph type, some graph default to leaving out factors with no non NA values (see book), some do not and you need to explicitly drop the factor value to make the empty parts go away if wanted. Sometimes we also have to drop empty factors when doing more modeling type analysis.
+
+
+
+For example. Converstations count asked how many conversations about the book the students had. This question was not on the first survey
+```{r}
+
+ggplot(SummerRead)+geom_histogram(mapping=aes(x=ConversationsCount),bins=10)+facet_wrap(~Book)+labs(x="Count of People", y="Number of Students Reporting",title="Count of Number of People Conversed With by Book" )+scale_x_continuous(limits=c(NA,25)) #the last part is to truncate the axes to avoid the outliers
+```
+
+If there were no values of Warriors it would drop. So the easiest thing to do is to filter them out
+```{r}
+SummerReadNoWarriors=filter(SummerRead, Book!="The Warriors")
+ggplot(SummerReadNoWarriors)+geom_histogram(mapping=aes(x=ConversationsCount),bins=10)+facet_wrap(~Book)+labs(x="Count of People", y="Number of Students Reporting",title="Count of Number of People Conversed With by Book" )+scale_x_continuous(limits=c(NA,25)) #the last part is to truncate the axes to avoid the outliers
+```
+
+If a level is missing values at all, you can use the forcats command fct_drop
+
+##Modifying factor Levels
+For EnjoyBook the answer ranged from 1 which was Strongly Agree to 5 which was Strongly Disagree.
+
+```{r}
+count(SummerRead, EnjoyBook)
+```
+We want to change these factor levels to labels that match the categories rather than numbers. I could rename it the same name, but will not incase I need the numbers again. Note since EnjoyBook is currently numbers not letters, it needs to be changed to a factor using as.factor first
+```{r}
+SummerRead=mutate(SummerRead, EnjoyBookC = fct_recode(as.factor(EnjoyBook),
+    "SA" = "1",
+    "A" = "2",
+    "N" = "3",
+    "D" = "4",
+    "SD" = "5"
+  ))
+```
+
+```{r}
+count(SummerRead, EnjoyBookC)
+```
+
+
+#Dates and Times
+
+Parsing and working with dates and times requires specific tools and careful thought about units and time zones.
+
+Lubridate still needs to be loaded seperately.
+```{r}
+library(lubridate)
+```
+
+Here is an exercise from the book, which we'll work with.
+
+Use the appropriate lubridate function to parse each of the following dates:
+```{r}
+d1 <- "January 1, 2010"
+d2 <- "2015-Mar-07"
+d3 <- "06-Jun-2017"
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+d5 <- "12/30/14" # Dec 30, 2014
+```
+
+d1 has month, day, year
+d2 has year, month, day
+d3 has day, month, year
+d4 has a  month day year
+d5 has month day year
+For each we look at what parts are there. 
+```{r}
+d1=mdy(d1)
+d2=ymd(d2)
+d3=dmy(d3)
+d4=mdy(d4)
+d5=mdy(d5)
+d1
+d2
+d3
+d4
+d5
+```
+Note all the output is in year, month, date
+
+Durations
+```{r}
+d2-d1 #not as human useful
+as.duration(d2-d1) #better
+```
+
+There is more on this in the book.
+
+

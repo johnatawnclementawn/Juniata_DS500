@@ -1,0 +1,159 @@
+---
+title: "Visualization-Which graph and labels"
+author: "Kim Roth & Johnathan Clementi"
+date: "2/12/2020"
+output: html_document
+---
+
+Libraries needed to run this document and a bit of data formatting.
+```{r}
+library("tidyverse") #for ggplot
+library("fivethirtyeight") # for data.
+# Turn off scientific notation
+options(scipen = 99)
+```
+
+We will look at the data set bechtel from this article https://fivethirtyeight.com/features/the-dollar-and-cents-case-against-hollywoods-exclusion-of-women/ from FiveThirtyEight. 
+Here is a description of some of the graphs.
+https://cran.r-project.org/web/packages/fivethirtyeight/vignettes/bechdel.html
+Here you can find a description of the variables.
+https://cran.r-project.org/web/packages/fivethirtyeight/fivethirtyeight.pdf
+
+
+The Bechdel test is a set of criterion on female rerpresentation in a movie. To pass the test:
+
+1. Movie must contain at least two named women.
+2. At least two women must talk to each other.
+3. The women must talk to each other about something other than a man.
+
+So now lets look at the data. The cases here are films.
+```{r}
+str(bechdel) #list variables
+bechdel
+```
+
+So say we want to graph pass and fail amounts for the test. That is stored in the variable binary.
+
+1. What type of variable is binary?
+1A. Categorical
+
+2. What type of graphs can we use?
+2A. One discrete variable graphs:  Bar chart (maybe pie chart)
+
+3. Make a graph for binary. Describe what you see. The description should be a sentence or two about interesting features of the graph.
+
+
+3A. This figure illustrates the distribution of movies that pass or fail the Bechdel Test. Using the code below, R and ggplot sum the instances of 'fail' and 'pass' movies and then form a bar chart of those aggregates. 
+```{r}
+ggplot(data = bechdel) + geom_bar(mapping = aes(x=binary))
+```
+
+
+
+Now we are going to label your graph. 
+To label a graph use the command +labs(title="Title you want", x="X axis title", y="Y axis title").
+
+For example graphing clean_test which is a categorical variable with reasons for failure:
+```{r}
+ggplot(data = bechdel) +
+  geom_bar(mapping = aes(x = clean_test))+labs(title="Bechdel Test Results with Reason Failed", x="Movie Classification",y="Number of Movies")
+```
+
+
+
+4. Make a new graph for binary with labels.
+4A.
+```{r}
+ggplot(data = bechdel) + 
+  geom_bar(mapping = aes(x=binary, fill = binary)) + guides(fill = FALSE) +
+  labs(title = "Distribution of Movies that Pass/Fail the Bechdel Test", x="Movie Classification", y = "Number of Movies")
+```
+
+
+
+5. What sorts of graphs could you make using both binary and clean_test?
+5A. You could make a bar chart that uses color to show which values of clean_test fall into the pass/fail binary classification of the Bechdel test.
+
+6. Make a labeled graph using both binary and clean_test. Describe what you see.
+6A. This is the graph I imagined in my answer to question 5. It uses color differences to show which clean_test categores pass/fail the Bechdel test.
+```{r}
+ggplot(data = bechdel) +
+  geom_bar(mapping = aes(x = clean_test, fill = binary)) +
+  labs(title="Bechdel Test Results with Reason Failed", x="Movie Classification",y="Number of Movies") +
+  guides(fill=guide_legend(title = ""))
+```
+
+
+7. Using your previous graph for binary and clean_test, change into a different graph by either changing positon or using `coord_polar()`.
+7A.
+```{r}
+ggplot(data = bechdel) +
+  geom_bar(mapping = aes(x = clean_test, fill = binary)) +
+  labs(title="Bechdel Test Results with Reason Failed", x="Movie Classification",y="Number of Movies") +
+  guides(fill=guide_legend(title = "")) +
+  coord_polar(theta = "x")
+```
+
+8. What type of variable is budget?
+8A. Continuous
+
+
+9. What sorts of graphs could you make of budget?
+9A. One continuous variable graphs - area, density, dotplot, frequency plot, histogram
+
+10. Make a labeled graph of budget. Describe what you see.
+10A. In the graph below, you see that $100 million or less is usually spent to make a movie in this dataset. 
+```{r}
+ggplot(data=bechdel) +
+  geom_histogram(mapping = aes(x=budget)) +
+  labs(title = "Money Spent to Make Movies", x = "Movie Budget($)", y = "Number of Movies")
+```
+
+
+11. Add a categorical/discrete variable to the budget graph as a fill. Change the color scheme to something other than the default. Make sure to adjust the labels. Describe what you see.
+11A. There seems to be an even distribution of movies that pass/fail the bechdel test within the $50,000,000; but there seem to be more movies that fail the bechdel test above that threshold.
+```{r}
+ggplot(data=bechdel) +
+  geom_histogram(mapping = aes(x=budget, fill = binary)) +
+  labs(title = "Money Spent on Movies by Pass/Fail of Bechdel Test", x = "Movie Budget($)", y = "Number of Movies") +
+  guides(fill=guide_legend(title = "Bechdel Test"))
+```
+
+
+12. Graph both budget and binary together with labels using facets. Describe what you see.
+12A. This graph allows the viewer to breakdown movie budget distributions more clearly by pass/fail of the Bechdel test.
+```{r}
+ggplot(data=bechdel) +
+  geom_histogram(mapping = aes(x=budget, fill = binary)) +
+  facet_grid(binary ~ .) +
+  labs(title = "Money Spent on Movies by Pass/Fail of Bechdel Test", x = "Movie Budget($)", y = "Number of Movies") +
+  guides(fill=guide_legend(title = "Bechdel Test"))
+```
+
+
+13. What kind of variable is decade code? Note decade code represents the groups of decades the data uses. Movies from 2010 and above are decade 1, movince from 2000 to 2009 are decade 2, movies from 1990 to 1999 are decade 3. Movies before 1990 do not have a decade code.
+13A. Categorical
+
+14. How is R treating it?
+14A. As an integer
+
+
+
+You might want to use decade code as a category rather than a number. If you want to use decade code as a category, you will need to tell R it is a cateogry, which for R is called a factor. We will do this using as.factor
+```{r}
+bechdel=mutate(bechdel, decadecat=as.factor(decade_code)) #defines a new variable decadecat that has decade code as a category. Note could just rename old variable too. This is a dplyr command, we'll talk about that soon
+str(bechdel)
+```
+
+15. Now make a graph of budget_2013 by decadecat. Describe what you see.
+```{r}
+ggplot(data = bechdel) +
+  geom_col(mapping = aes(x = decadecat, y = budget_2013)) +
+  labs(title = "Movie Budget by Decade", x = "Decade", y = "Budget($)")
+```
+
+This document based on:
+https://fivethirtyeight.com/features/the-dollar-and-cents-case-against-hollywoods-exclusion-of-women/ 
+https://cran.r-project.org/web/packages/fivethirtyeight/vignettes/bechdel.html
+
+
