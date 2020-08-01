@@ -1,0 +1,469 @@
+---
+title: "ClementiPrj1DataExploration"
+author: "Johnathan Clementi"
+date: "2/16/2020"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Library load
+```{r, results="hide", warning=FALSE, message=FALSE, error=FALSE}
+library(tidyverse) #loads ggplot and the others
+library(readxl)#for reading in excel files
+```
+
+
+Read data - fill blanks with NA
+```{r}
+czenSites <- read.csv('C:/Users/clemenj/Google Drive/Grad School/Juniata_DataScience/DS500/Project1/data/longtermMonitoringSites.csv', na.strings = c("", "NA"))
+```
+
+
+
+###################################################################################################
+Metadata:
+
+Origin - CZEN (Critical Zone Exloration Network) / CZO (Critical Zone Observatory) Site Seeker website: https://www.czen.org/site_seeker
+
+Date of Creation - Data exported from czen site seeker on July 25, 2018. 
+
+List of Variables:
+1. Field Site - (Categorical) - Name given to field site 
+2. Latitude - (Quantitative) - Latitude of field site
+3. Longitude - (Quantitative) - Longitude of field site
+4. Field Site type - (Categorical) - Affiliation of field site with US or international based research groups
+5. Registration - (Categorical) -Is the field site a registered member of CZEN
+6. Mean Annual Precipitation - (Quantitative) - Average precipitation in millimiters per year
+7. Average Annual Temperature - (Quantitative) - Average temperature in degrees Centigrade
+8. Geology - (Categorical) - Most common geology type present at field site
+9. Land Cover - (Categorical) - Most common land cover type present at field site
+10. Climate - (Categorical) - Most common climate type present at field site
+11. Sub-Climate - (Categorical) - Second most common climate type present at field site
+12. Network(s) - (Categorical) - Research networks the field site is affiliated with
+13. Soil Order - (Categorical) - Most common soil type present at field site
+14. Study Start Date - (Quantitative) - The year in which the field site was opened for research
+15. Hydrology: Surface water stream order - (Categorical) - Stream order of primary surface water present at field site
+16. Hydrology: Surface water - Stream Flow Performance - (Categorical) - Stream flow type of primary surface water present at field site
+17. Hydrology: Groundwater - (Categorical) - Type of groundwater present at field site 
+
+
+
+#######################################################################################################################
+Data Cleaning and Manipulation
+
+Rename variable headings to exclude spaces
+```{r}
+czenSites = czenSites %>%
+  rename(FieldSite = 'Field.Site', FieldSiteType = 'Field.Site.Type', MeanAnnualPrecip = 'Mean.Annual.Precipitation', AvgTemp = 'Average.Annual.Temperature', LandCover = 'Land.Cover', SubClimate = 'Sub.Climate', Networks = 'Network.s.', SoilOrder = 'Soil.Order', StudyStartDate = 'Study.Start.Date', SurfaceStreamOrder = 'Hydrology..Surface.water.stream.order', StreamFlowPerformance = 'Hydrology..Surface.water...Stream.Flow.Performance', Groundwater = 'Hydrology..Groundwater')
+
+str(czenSites)
+```
+
+
+Fix misspelled values in FieldSiteType, Geology, & Landcover
+```{r}
+czenSites = czenSites %>%
+  mutate(FieldSiteType = str_replace(FieldSiteType, "Interntaional", "International")) %>%
+  mutate(Geology = str_replace(Geology, "secimentary", "sedimentary")) %>%
+  mutate(LandCover = str_replace(LandCover, "Shurbland", "Shrubland"))
+```
+
+
+Replace Unknown / None values with NA in Networks, SoilOrder, and SurfaceStreamOrder
+```{r}
+czenSites = czenSites %>%
+  mutate(Networks = str_replace(Networks, "None", NA_character_)) %>%
+  mutate(SoilOrder = str_replace(SoilOrder, "Unknown", NA_character_)) %>%
+  mutate(SurfaceStreamOrder = str_replace(SurfaceStreamOrder, "Unknown", NA_character_)) 
+```
+
+
+Remove units from MeanAnnualPrecip, then convert to integer
+```{r}
+#Use mutate to change the existing data in the variable, use str_replace (part of stringr) and regex to identify unit string and replace it with empty string
+
+czenSites = czenSites %>%
+  mutate(MeanAnnualPrecip = str_replace(MeanAnnualPrecip, "millimeters / year", "")) %>%
+  mutate(MeanAnnualPrecip = as.numeric(MeanAnnualPrecip))
+```
+
+
+Remove units from AvgTemp, then convert to integer & remove dubious value (73C = 163F & 34C = 93.2F) from AvgTemp
+```{r}
+czenSites = czenSites %>%
+  mutate(AvgTemp = str_replace(AvgTemp, "¡C", "")) %>%
+  mutate(AvgTemp = str_replace(AvgTemp, "73", NA_character_)) %>%
+  mutate(AvgTemp = str_replace(AvgTemp, "34", NA_character_)) %>%
+  mutate(AvgTemp = as.numeric(AvgTemp))
+```
+
+
+Remove date ranges for StudyStartDate and convert to integer
+```{r}
+czenSites = czenSites %>%
+  mutate(StudyStartDate = str_replace(StudyStartDate, " to .*", "")) %>%
+  mutate(StudyStartDate = as.numeric(StudyStartDate))
+```
+
+
+Remove redundant text from Groundwater values
+```{r}
+czenSites = czenSites %>%
+  mutate(Groundwater = str_replace(Groundwater, "Arrangment of Aquifer Components  - ", "")) %>%
+  mutate(Groundwater = str_replace(Groundwater, "Arrangment of Aquifer Components  - ", ""))
+```
+
+
+Simplify Groundwater Values
+```{r}
+czenSites = czenSites %>%
+  mutate(Groundwater = str_replace(Groundwater, "Single, dominant unconfined aquifer", "Single unconfined aquifer")) %>%
+  mutate(Groundwater = str_replace(Groundwater, "Complexly interbedded sequence of aquifers and confining beds", "Combination of aquifers and confining beds")) %>%
+  mutate(Groundwater = str_replace(Groundwater, "Three unit system of an unconfined aquifer, confined aquifer and a confining bed", "Unconfined and confined aquifer and confining bed"))
+```
+
+
+Split multivalue observations in variables for Geology, Landcover, SubClimate, Networks, SoilOrder, SurfaceStreamOrder, StreamFlowPerformance, Groundwater. Then select relevant variables.
+
+* Note - These functions create new dataframes to preserve the count for only that variable
+(If I did these operations on the same dataframe, values would be counted more than once for observations that have
+multiple multi-part values.)
+```{r}
+# Geology
+czenSitesGeology = czenSites %>%
+  transform(Geology = strsplit(as.character(Geology), ",")) %>%
+  unnest(Geology) %>%
+  mutate(Geology = str_trim(Geology)) %>%
+  select(FieldSite, Latitude, Longitude, Geology)
+
+# LandCover
+czenSitesLandCover = czenSites %>%
+  transform(LandCover = strsplit(as.character(LandCover), ",")) %>%
+  unnest(LandCover) %>%
+  mutate(LandCover = str_trim(LandCover)) %>%
+  select(FieldSite, Latitude, Longitude, LandCover)
+
+# SubClimate  
+czenSitesSubClimate = czenSites %>%
+  transform(SubClimate = strsplit(as.character(SubClimate), ",")) %>%
+  unnest(SubClimate) %>%
+  mutate(SubClimate = str_trim(SubClimate)) %>%
+  select(FieldSite, Latitude, Longitude, Climate, SubClimate)
+
+# Networks
+czenSitesNetworks = czenSites %>%
+  transform(Networks = strsplit(as.character(Networks), ",")) %>%
+  unnest(Networks) %>%
+  mutate(Networks = str_trim(Networks)) %>%
+  select(FieldSite, Latitude, Longitude, Networks)
+
+# Soil Order
+czenSitesSoilOrder = czenSites %>%
+  transform(SoilOrder = strsplit(as.character(SoilOrder), ",")) %>%
+  unnest(SoilOrder) %>%
+  mutate(SoilOrder = str_trim(SoilOrder)) %>%
+  select(FieldSite, Latitude, Longitude, SoilOrder)
+
+# Surface Stream Order
+czenSitesStreamOrder = czenSites %>%
+  transform(SurfaceStreamOrder = strsplit(as.character(SurfaceStreamOrder), ",")) %>%
+  unnest(SurfaceStreamOrder) %>%
+  mutate(SurfaceStreamOrder= str_trim(SurfaceStreamOrder)) %>%
+  select(FieldSite, Latitude, Longitude, SurfaceStreamOrder)
+
+# Stream Performance
+czenSitesStreamPerformance = czenSites %>%
+  transform(StreamFlowPerformance = strsplit(as.character(StreamFlowPerformance), ",")) %>%
+  unnest(StreamFlowPerformance) %>%
+  mutate(StreamFlowPerformance = str_trim(StreamFlowPerformance)) %>%
+  select(FieldSite, Latitude, Longitude, StreamFlowPerformance)
+
+# Groundwater
+czenSitesGroundwater = czenSites %>%
+  transform(Groundwater = strsplit(as.character(Groundwater), ",")) %>%
+  unnest(Groundwater) %>%
+  mutate(Groundwater = str_trim(Groundwater)) %>%
+  select(FieldSite, Latitude, Longitude, Groundwater)
+```
+
+
+
+###################################################################################################
+Variation within each Variable
+
+Longitude:
+
+Longitude is the 'x' value in a coordinate system used to locate points of interest on the Earth's surface. 
+Lines of Longitude run from North -> South, but measure East -> West. 
+The Prime Meridian (0 longitude), runs through Greenwich, England. 
+This figure is interesting because you can see that the majority of research sites are located in the US. 
+Then there are not any research sites in the Atlantic Ocean, a few sites in Europe, not many in Africa.
+
+```{r}
+ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = Longitude)) +
+  labs(title = "Field Sites by Longitude", x = 'Longitude', y = "Number of Field Sites")
+```
+
+
+Latitude:
+
+Latitude is the 'y' value in a coordinate system used to locate points of interest on the Earth's surface.
+Lines of Latitude run from East -> West, but measure North -> South.
+The Equator (0 latitude), runs through the country of Equador. 
+This figure is interesting because you can observe that most of the research sites are located in the Northern Hemisphere.
+
+```{r}
+ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = Latitude)) +
+  coord_flip()
+```
+
+
+Type of Field Site:
+
+Traditionally, the US has been a leader in long-term ecological research. This is evident in the number of US-Affiliated research sites, as illustrated by this figure. 
+
+```{r}
+ggplot(data = czenSites) +
+  geom_bar(mapping = aes(x = factor(1), fill = FieldSiteType), width = 1) +
+  coord_polar("y") +
+  scale_fill_brewer(palette = "Dark2") +
+  theme(axis.text.x = element_blank())
+```
+
+
+Mean Annual Precip:
+
+One of the goals of this study is to identify ecosystems which lack representation in long-term research studies. 
+In this case, it appears that there may be a lack of long-term research that focuses on areas that would be classified as
+rainforests (precipitation > 2500 mm/year)
+
+```{r}
+ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = MeanAnnualPrecip)) +
+  labs(title = "Distribution of Average Precipiation at Field Sites", x = "Mean Annual Precip (mm/year)", y = "Number of Field Sites in Precip Range")
+
+summary(czenSites$MeanAnnualPrecip)
+```
+
+Average Temperature
+
+```{r}
+ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = AvgTemp)) +
+  labs(title = "Distribution of Average Temperature at Field Sites", x = "Average Temperature (Degrees Celcius)", y = "Number of Field Sites in Temperature Range")
+
+summary(czenSites$AvgTemp)
+```
+
+Geology:
+
+Most geologic types (types of rocks) are represented in the global long-term reserach sites with the exception of igneaous-ultramafic intrusive/extrusive, and igneous-felsic extrusive. These geologic types may be rare, and possibly only exist on small islands or areas that are not conducive to the current long-term research model.
+
+```{r}
+ggplot(data = czenSitesGeology) +
+  geom_bar(mapping = aes(x = Geology)) +
+  coord_flip() +
+  labs(title = "Distribution of Types of Geology", y = "Number of Field Sites with that geology", x = "Geologic Classification")
+
+czenSitesGeology %>% group_by(Geology) %>% count(Geology)
+```
+
+Landcover:
+
+Focusing on less represented research locations, this figure highlights that highly developed areas (cities) are not well
+represented in research sites as Evergreen forests are. This is consistent with a trend I have observed in ecology, in 
+that scientists are interested in researching relatively unmodified ecosystems. However, there has been a push lately 
+to begin researching urban ecologic systems. For instance, Baltimore has a well known long-term research site.
+
+```{r}
+ggplot(data = czenSitesLandCover) +
+  geom_bar(mapping = aes(x = LandCover)) +
+  coord_flip() +
+  labs(title = "Distribution of Types of Land Cover", y = "Number of Field Sites with that type of land cover", x = "Land cover Classification")
+
+czenSitesLandCover %>% group_by(LandCover) %>% count(LandCover)
+```
+
+Climate:
+
+Polar and Boreal climates are the least represented across the research sites. This is most likely because these
+environments are more harsh and less conducive to human living. There are more resources needed to live and
+conduct research in these locations.
+
+```{r}
+ggplot(data = czenSites) +
+  geom_bar(mapping = aes(x = Climate)) +
+  coord_flip()+
+  labs(title = "Distribution of Types of Climate", y = "Number of Field Sites with that climate", x = "Climate type")
+
+czenSites %>% group_by(Climate) %>% count(Climate)
+```
+
+Sub Climate:
+
+These results are supportive of those found in the Mean Annual Precipitation figure. Most research sites are in areas
+that have temperate environments that are not on the extreme ends of humidity. Deserts and rainforests are two areas
+that are not well represented in long-term research. 
+
+```{r}
+ggplot(data = czenSitesSubClimate) +
+  geom_bar(mapping = aes(x = SubClimate)) +
+  coord_flip() +
+  labs(title = "Distribution of Types of Sub Climates", y = "Number of Field Sites with that sub climate", x = "Sub climate Classification")
+
+czenSitesSubClimate %>% group_by(SubClimate) %>% count(SubClimate)
+```
+
+
+Networks:
+
+A network is essentially an organization of scientists involved in the same type of research. For instance, the USFS
+network is comprised of US Forest Service members that study forestry in the US. NEON stands for National Ecologic Observation Network and houses scientists that focus ecologic systems rather than geologic systems (CZO).
+
+```{r}
+ggplot(data = czenSitesNetworks) +
+  geom_bar(mapping = aes(x = Networks)) +
+  coord_flip() +
+  labs(title = "Distribution of Research Networks", y = "Number of Field Sites belonging to that network", x = " Research Network")
+
+czenSitesNetworks %>% group_by(Networks) %>% count(Networks)
+```
+
+Soil Order:
+
+Oxisol and Andisols are the least representative soil orders found at the research sites. This is supportive of our 
+earlier conclusisions - According to the USDA, oxisols are found in tropical and subtropical enviroments and are not naturally fertile. Additionally, according to the USDA, andisols are compartively rare and only make up about 1% of the World's surface.  (USDA, https://www.nrcs.usda.gov/wps/portal/nrcs/detail/soils/edu/?cid=nrcs142p2_053588).
+
+```{r}
+ggplot(data = czenSitesSoilOrder) +
+  geom_bar(mapping = aes(x = SoilOrder)) +
+  coord_flip() +
+  labs(title = "Distribution of Types of Soil Order", y = "Number of Field Sites with that Soil Order", x = "Soil Order Classification")
+
+czenSitesSoilOrder %>% group_by(SoilOrder) %>% count(SoilOrder)
+```
+
+Study Start Date:
+
+Most long-term research has begun since the major environmental legislation was passed by the Nixon administration.
+With increases in access to information and focus on how anthropogenic climate change is affecting the Earth's
+environmental systems, scientists are becoming more focused on tracking the changes of these systems over longer stretches of time. 
+
+```{r}
+ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = StudyStartDate)) +
+  coord_flip()
+
+summary(czenSites$StudyStartDate)
+```
+
+Stream Order
+
+Stream order is a measurment of how many tributaries flow into a stream or river. First order streams are streams who's 
+primary source of water is from the landscape and/or a spring. When first order streams combine, they produce second order streams. Therefore, this figure is logical in that it shows an abundance of first, second, and third order streams, and less fourth, fifth, and sixth order streams.
+
+```{r}
+ggplot(data = czenSitesStreamOrder) +
+  geom_bar(mapping = aes(x = SurfaceStreamOrder)) +
+  coord_flip() +
+  labs(title = "Distribution of Surface Stream Orders", y = "Number of Field Sites with that type of stream", x = "Stream Order Classification")
+
+czenSitesStreamOrder %>% group_by(SurfaceStreamOrder) %>% count(SurfaceStreamOrder)
+```
+
+Stream Flow Performance
+
+Most streams that are studied  or present at research sites are perennial streams. 
+
+```{r}
+ggplot(data = czenSitesStreamPerformance) +
+  geom_bar(mapping = aes(x = StreamFlowPerformance)) +
+  coord_flip() +
+  labs(title = "Distribution of Stream Performance", y = "Number of Field Sites with that type of stream", x = "Stream Performance Classification")
+
+czenSitesStreamPerformance %>% group_by(StreamFlowPerformance) %>% count(StreamFlowPerformance)
+```
+
+Ground water
+
+It appears as though most of the research sites are not focused on measuring groundwater (geologic focus). 
+
+```{r}
+ggplot(data = czenSitesGroundwater) +
+  geom_bar(mapping = aes(x = Groundwater)) +
+  coord_flip() +
+  labs(title = "Distribution of types of Groundwater", y = "Number of Field Sites with that type of groundwater", x = "Groundwater Classification")
+
+czenSitesGroundwater %>% group_by(Groundwater) %>% count(Groundwater)
+```
+
+###################################################################################################
+Covariation
+
+
+Latitude x Mean Annual Precip & Latitude x AvgTemp (Quantitative x Quantitative)
+
+The most interesting figure to me is the Temperature across Latitude. You can see the decrease in average temperature as latitude diverges from the Equator. 
+
+```{r}
+ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = "Distribution of Annual Precip Across Latitude", y = "Latitude", x = "Mean Annual Precipitation (mm/yr)")
+
+ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = AvgTemp), na.rm = TRUE) +
+  labs(title = "Distribution of Average Temperature Across Latitude", y = "Latitude", x = "Average Temperature (C)")
+```
+
+Longitude x Precip & Longitude x Avg Temp (Quantitative x Quantitative)
+```{r}
+ggplot(data = czenSites) +
+  geom_point(aes(x = Longitude, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = "Distribution of Annual Precip Across Longitude", y = "Longitude", x = "Mean Annual Precipitation (mm/yr)")
+
+ggplot(data = czenSites) +
+  geom_point(aes(x = Longitude, y = AvgTemp), na.rm = TRUE)+
+  labs(title = "Distribution of Average Temperature Across Longitude", y = "Longitude", x = "Average Temperature (C)")
+```
+
+
+Climate x Sub Climate (Categorical x Categorical)
+
+This figure supports the claim that temperate climates are well represented, whereas polar and boreal climates are not.
+
+```{r}
+ggplot(data = czenSitesSubClimate) +
+  geom_count(aes(x = Climate, y = SubClimate)) +
+  labs(title = "Relationship between Climate and Sub Climate", y = "Sub Climate", x = "Climate")
+```
+
+
+Climate x AvgTemp and Climate x MeanAnnualPrecip (Categorical x Quantitative)
+
+
+
+```{r}
+ggplot(data = czenSites) +
+  geom_col(aes(x = Climate, y = AvgTemp), na.rm = TRUE) +
+  labs(title = "Average Temperature as a function of Climate", y = "Climate", y = "Average Temperature (C)")
+
+ggplot(data = czenSites) +
+  geom_col(aes(x = Climate, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = "Mean Annual Precip as a function of Climate", y = "Climate", y = "Mean Annual Precip (mm/yr)")
+```
+
+
+###################################################################################################
+Reflections
+The method of data exploration that I chose to pursue was that of fixing known issues right away (I knew I would need to remove the units from AvgTemp and MeanAnnualPrecip). Then I created rough figures for each variable and identified issues that needed to be resolved. These included misspellings of data values (secimentary instead of sedimentary, or interntaional instead of international). 
+I then needed to figure out what to do with the variables that had multiple values for some observations. Based on some internet searching, the best course of action I found was to use the tidyr function ‘unnest’ to split the multivalues at the commas that separated them. What this did was create a new observation for each value in the column. Therefore, I needed to create separate dataframes for each multiple value variable I fixed, or else the main czenSites dataframe would have redundant observations. This process was definitely challenging, but rewarding once I figured it out.
+Once I had completed these preliminary data cleanings, I returned to the individual figures to identify more subtle issues. Once I had identified those issues, I made the changes back in the data cleaning section. 
+I am generally happy with the way my figures turned out. I included multiple covariation figures to illustrate noisy data vs the cleaner Latitude x AvgTemp. I wish I had more knowledge to use color to highlight certain aspects of each figure. Additionally, I tried to figure out how to re-order the Stream Order figure (First -> Sixth instead of Alphabetical) but was unable to figure that out. 
+Overall, I was not surprised by the areas of study that were lacking in representation. Most existing Field sites are in the US and cover a broad range of systems, but there are still many unique systems across the Earth that do not have long-term research organizations established. 
+
+
