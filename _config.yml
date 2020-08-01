@@ -4,5 +4,5 @@ relative_links:
   enabled: true
   collections: true
 include:
-  - ClementiPrj2SkillsApplication.Rmd
+  - index.Rmd
 theme: jekyll-theme-modernist
