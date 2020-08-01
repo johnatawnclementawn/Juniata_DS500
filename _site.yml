@@ -1,0 +1,9 @@
+name: "DS500FinalProject"
+output_dir: "docs"
+navbar:
+  title: "Clementi DS500 Final Project"
+  left:
+    - text: "RMarkdown"
+      href: index.html
+      
+    

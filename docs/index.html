@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Johnathan Clementi" />
+
+
+<title>ClementiPrj1DataExploration</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="site_libs/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Clementi DS500 Final Project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">RMarkdown</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">ClementiPrj1DataExploration</h1>
+<h4 class="author">Johnathan Clementi</h4>
+<h4 class="date">4/21/2020</h4>
+
+</div>
+
+
+<p>Library load</p>
+<pre class="r"><code>library(tidyverse) #loads ggplot and the others
+library(readxl)#for reading in excel files
+library(lubridate)</code></pre>
+<p>Read data - fill blanks with NA</p>
+<pre class="r"><code>czenSites &lt;- read.csv(&#39;C:/Users/Johnathan/Google Drive/Grad School/Juniata_DataScience/DS500/Project1/data/longtermMonitoringSites.csv&#39;, na.strings = c(&quot;&quot;, &quot;NA&quot;))</code></pre>
+<div id="section" class="section level99">
+<p></p>
+<p>Metadata:</p>
+<p>Origin - CZEN (Critical Zone Exloration Network) / CZO (Critical Zone Observatory) Site Seeker website: <a href="https://www.czen.org/site_seeker" class="uri">https://www.czen.org/site_seeker</a></p>
+<p>Date of Creation - Data exported from czen site seeker on July 25, 2018.</p>
+<p>About these data: This dataset contains data about research sites that have been registered to the Critical Zone Exploration Network’s website. The original goal of collecting these data was to create a database of long-term research sites and the areas of research they specialize in. One question that the data curators were interested in was whether certain areas were poorly represented. As there are nuances to every research station, data collected are generalized for each research site, some representing more than one attribute of the variables (i.e. a research site can have multiple Network affiliations).</p>
+<p>List of Variables: 1. Field Site - (Categorical) - Name given to field site 2. Latitude - (Quantitative) - Latitude of field site 3. Longitude - (Quantitative) - Longitude of field site 4. Field Site type - (Categorical) - Affiliation of field site with US or international based research groups 5. Registration - (Categorical) -Is the field site a registered member of CZEN 6. Mean Annual Precipitation - (Quantitative) - Average precipitation in millimiters per year 7. Average Annual Temperature - (Quantitative) - Average temperature in degrees Centigrade 8. Geology - (Categorical) - Most common geology type present at field site 9. Land Cover - (Categorical) - Most common land cover type present at field site 10. Climate - (Categorical) - Most common climate type present at field site 11. Sub-Climate - (Categorical) - Second most common climate type present at field site 12. Network(s) - (Categorical) - Research networks the field site is affiliated with 13. Soil Order - (Categorical) - Most common soil type present at field site 14. Study Start Date - (Quantitative) - The year in which the field site was opened for research 15. Hydrology: Surface water stream order - (Categorical) - Stream order of primary surface water present at field site 16. Hydrology: Surface water - Stream Flow Performance - (Categorical) - Stream flow type of primary surface water present at field site 17. Hydrology: Groundwater - (Categorical) - Type of groundwater present at field site</p>
+<div id="section-1" class="section level119">
+<p></p>
+<p>Data Cleaning and Manipulation</p>
+<p>Rename variable headings to exclude spaces</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  rename(FieldSite = &#39;Field.Site&#39;, FieldSiteType = &#39;Field.Site.Type&#39;, MeanAnnualPrecip = &#39;Mean.Annual.Precipitation&#39;, AvgTemp = &#39;Average.Annual.Temperature&#39;, LandCover = &#39;Land.Cover&#39;, SubClimate = &#39;Sub.Climate&#39;, Networks = &#39;Network.s.&#39;, SoilOrder = &#39;Soil.Order&#39;, StudyStartDate = &#39;Study.Start.Date&#39;, SurfaceStreamOrder = &#39;Hydrology..Surface.water.stream.order&#39;, StreamFlowPerformance = &#39;Hydrology..Surface.water...Stream.Flow.Performance&#39;, Groundwater = &#39;Hydrology..Groundwater&#39;)
+
+str(czenSites)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    233 obs. of  17 variables:
+##  $ FieldSite            : Factor w/ 233 levels &quot;Abby Road&quot;,&quot;Abisko Research Station&quot;,..: 1 2 3 4 5 6 7 8 9 10 ...
+##  $ Latitude             : num  45.8 68.3 43.8 47.9 -22.5 ...
+##  $ Longitude            : num  -122.33 18.82 -74.84 -4.15 133.34 ...
+##  $ FieldSiteType        : Factor w/ 9 levels &quot;Independent&quot;,..: 9 8 1 3 3 9 3 9 9 9 ...
+##  $ Registration         : Factor w/ 2 levels &quot;Registered&quot;,&quot;Unregistered&quot;: 2 2 1 2 2 1 1 2 2 2 ...
+##  $ MeanAnnualPrecip     : Factor w/ 158 levels &quot;100 millimeters / year&quot;,..: NA 89 17 15 88 32 118 66 119 86 ...
+##  $ AvgTemp              : Factor w/ 36 levels &quot;-12¡C&quot;,&quot;-2¡C&quot;,..: NA 9 30 11 24 29 26 35 23 NA ...
+##  $ Geology              : Factor w/ 66 levels &quot;carbonate&quot;,&quot;carbonate, igneous-felsic intrusive&quot;,..: NA 15 9 9 NA 25 NA 24 1 47 ...
+##  $ LandCover            : Factor w/ 92 levels &quot;Agriculture- Crops&quot;,..: 42 22 90 4 60 90 24 39 89 83 ...
+##  $ Climate              : Factor w/ 5 levels &quot;Boreal&quot;,&quot;Mediterranean&quot;,..: NA 3 4 4 NA 4 5 4 5 3 ...
+##  $ SubClimate           : Factor w/ 9 levels &quot;Arid&quot;,&quot;Dry&quot;,&quot;Humid&quot;,..: NA NA 7 3 NA 7 6 4 7 NA ...
+##  $ Networks             : Factor w/ 58 levels &quot;ARS&quot;,&quot;ARS, CUAHSI&quot;,..: 46 52 32 14 56 57 51 38 35 35 ...
+##  $ SoilOrder            : Factor w/ 52 levels &quot;Alfisol&quot;,&quot;Alfisol, Aridisol, Inceptisol, Mollisol&quot;,..: NA 34 49 51 51 51 NA 12 26 34 ...
+##  $ StudyStartDate       : Factor w/ 92 levels &quot;1907&quot;,&quot;1910&quot;,..: 92 4 74 NA 90 89 59 22 17 92 ...
+##  $ SurfaceStreamOrder   : Factor w/ 12 levels &quot;Fifth Order&quot;,..: NA NA 2 NA NA 2 4 10 NA NA ...
+##  $ StreamFlowPerformance: Factor w/ 7 levels &quot;Ephemeral&quot;,&quot;Intermittent&quot;,..: NA 4 2 NA NA 4 3 4 NA NA ...
+##  $ Groundwater          : Factor w/ 5 levels &quot;Arrangment of Aquifer Components  - Complexly interbedded sequence of aquifers and confining beds&quot;,..: NA NA NA 2 NA 2 2 NA 1 NA ...</code></pre>
+<p>Fix misspelled values in FieldSiteType, Geology, &amp; Landcover</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(FieldSiteType = str_replace(FieldSiteType, &quot;Interntaional&quot;, &quot;International&quot;)) %&gt;%
+  mutate(Geology = str_replace(Geology, &quot;secimentary&quot;, &quot;sedimentary&quot;)) %&gt;%
+  mutate(LandCover = str_replace(LandCover, &quot;Shurbland&quot;, &quot;Shrubland&quot;))</code></pre>
+<p>Replace Unknown / None values with NA in Networks, SoilOrder, and SurfaceStreamOrder</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(Networks = str_replace(Networks, &quot;None&quot;, NA_character_)) %&gt;%
+  mutate(SoilOrder = str_replace(SoilOrder, &quot;Unknown&quot;, NA_character_)) %&gt;%
+  mutate(SurfaceStreamOrder = str_replace(SurfaceStreamOrder, &quot;Unknown&quot;, NA_character_)) </code></pre>
+<p>Remove units from MeanAnnualPrecip, then convert to integer</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(MeanAnnualPrecip = str_replace(MeanAnnualPrecip, &quot;millimeters / year&quot;, &quot;&quot;)) %&gt;%
+  mutate(MeanAnnualPrecip = as.numeric(MeanAnnualPrecip))</code></pre>
+<pre><code>## Warning: NAs introduced by coercion</code></pre>
+<p>Remove units from AvgTemp, then convert to integer &amp; remove dubious value (73C = 163F &amp; 34C = 93.2F) from AvgTemp</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(AvgTemp = str_replace(AvgTemp, &quot;¡C&quot;, &quot;&quot;)) %&gt;%
+  mutate(AvgTemp = str_replace(AvgTemp, &quot;73&quot;, NA_character_)) %&gt;%
+  mutate(AvgTemp = str_replace(AvgTemp, &quot;34&quot;, NA_character_)) %&gt;%
+  mutate(AvgTemp = as.numeric(AvgTemp))</code></pre>
+<p>Remove date ranges for StudyStartDate and convert to integer</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  separate(StudyStartDate, into = c(&quot;StudyStartDate&quot;, &quot;StudyEndDate&quot;), sep = &quot; to &quot;) %&gt;%  
+  mutate(StudyStartDate = date(sub(&quot;$&quot;, &quot;-01-01&quot;, StudyStartDate))) %&gt;%
+  mutate(StudyEndDate = date(sub(&quot;$&quot;, &quot;-01-01&quot;, StudyEndDate)))</code></pre>
+<pre><code>## Warning: Expected 2 pieces. Missing pieces filled with `NA` in 215 rows [1, 2,
+## 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23, ...].</code></pre>
+<p>Remove redundant text from Groundwater values</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(Groundwater = str_replace(Groundwater, &quot;Arrangment of Aquifer Components  - &quot;, &quot;&quot;)) %&gt;%
+  mutate(Groundwater = str_replace(Groundwater, &quot;Arrangment of Aquifer Components  - &quot;, &quot;&quot;))</code></pre>
+<p>Simplify Groundwater Values</p>
+<pre class="r"><code>czenSites = czenSites %&gt;%
+  mutate(Groundwater = str_replace(Groundwater, &quot;Single, dominant unconfined aquifer&quot;, &quot;Single unconfined aquifer&quot;)) %&gt;%
+  mutate(Groundwater = str_replace(Groundwater, &quot;Complexly interbedded sequence of aquifers and confining beds&quot;, &quot;Combination of aquifers and confining beds&quot;)) %&gt;%
+  mutate(Groundwater = str_replace(Groundwater, &quot;Three unit system of an unconfined aquifer, confined aquifer and a confining bed&quot;, &quot;Unconfined and confined aquifer and confining bed&quot;))</code></pre>
+<p>Split multivalue observations in variables for Geology, Landcover, SubClimate, Networks, SoilOrder, SurfaceStreamOrder, StreamFlowPerformance, Groundwater. Then select relevant variables.</p>
+<ul>
+<li>Note - These functions create new dataframes to preserve the count for only that variable (If I did these operations on the same dataframe, values would be counted more than once for observations that have multiple multi-part values.)</li>
+</ul>
+<pre class="r"><code># Geology
+czenSitesGeology = czenSites %&gt;%
+  transform(Geology = strsplit(as.character(Geology), &quot;,&quot;)) %&gt;%
+  unnest(Geology) %&gt;%
+  mutate(Geology = str_trim(Geology)) %&gt;%
+  select(FieldSite, Latitude, Longitude, Geology)
+
+# LandCover
+czenSitesLandCover = czenSites %&gt;%
+  transform(LandCover = strsplit(as.character(LandCover), &quot;,&quot;)) %&gt;%
+  unnest(LandCover) %&gt;%
+  mutate(LandCover = str_trim(LandCover)) %&gt;%
+  select(FieldSite, Latitude, Longitude, LandCover)
+
+# SubClimate  
+czenSitesSubClimate = czenSites %&gt;%
+  transform(SubClimate = strsplit(as.character(SubClimate), &quot;,&quot;)) %&gt;%
+  unnest(SubClimate) %&gt;%
+  mutate(SubClimate = str_trim(SubClimate)) %&gt;%
+  select(FieldSite, Latitude, Longitude, Climate, SubClimate)
+
+# Networks
+czenSitesNetworks = czenSites %&gt;%
+  transform(Networks = strsplit(as.character(Networks), &quot;,&quot;)) %&gt;%
+  unnest(Networks) %&gt;%
+  mutate(Networks = str_trim(Networks)) %&gt;%
+  select(FieldSite, Latitude, Longitude, Networks)
+
+# Soil Order
+czenSitesSoilOrder = czenSites %&gt;%
+  transform(SoilOrder = strsplit(as.character(SoilOrder), &quot;,&quot;)) %&gt;%
+  unnest(SoilOrder) %&gt;%
+  mutate(SoilOrder = str_trim(SoilOrder)) %&gt;%
+  select(FieldSite, Latitude, Longitude, SoilOrder)
+
+# Surface Stream Order
+czenSitesStreamOrder = czenSites %&gt;%
+  transform(SurfaceStreamOrder = strsplit(as.character(SurfaceStreamOrder), &quot;,&quot;)) %&gt;%
+  unnest(SurfaceStreamOrder) %&gt;%
+  mutate(SurfaceStreamOrder= str_trim(SurfaceStreamOrder)) %&gt;%
+  select(FieldSite, Latitude, Longitude, SurfaceStreamOrder)
+
+# Stream Performance
+czenSitesStreamPerformance = czenSites %&gt;%
+  transform(StreamFlowPerformance = strsplit(as.character(StreamFlowPerformance), &quot;,&quot;)) %&gt;%
+  unnest(StreamFlowPerformance) %&gt;%
+  mutate(StreamFlowPerformance = str_trim(StreamFlowPerformance)) %&gt;%
+  select(FieldSite, Latitude, Longitude, StreamFlowPerformance)
+
+# Groundwater
+czenSitesGroundwater = czenSites %&gt;%
+  transform(Groundwater = strsplit(as.character(Groundwater), &quot;,&quot;)) %&gt;%
+  unnest(Groundwater) %&gt;%
+  mutate(Groundwater = str_trim(Groundwater)) %&gt;%
+  select(FieldSite, Latitude, Longitude, Groundwater)</code></pre>
+<p>Implementing a function for the above code:</p>
+<p>Ultimately, I could not get this to section to work. I was able to figure out that using the [<a href="#section-6"></a>] notation will replace $ when accessing the name of a variable from a dataframe. However, this notation will pass the data in the form of a vector. However, I think the trouble was coming from assigning this vector back to the data frame. It would throw an error saying that the <code>arguments imply differing number of rows</code>. Ultimately I chose to abandon this piece of the project because of time.</p>
+<pre class="r"><code># Splitting multivalue observations function
+multiSplit = function(newDF, existDF, varName){
+  newDF &lt;- data.frame(existDF)
+  str(newDF[[varName]])
+  # newDF = newDF %&gt;%
+    transform(newDF[[varName]] &lt;- strsplit((newDF[[varName]]), &quot;,&quot;))  #%&gt;%
+    unnest(newDF[[varName]]) #%&gt;%
+    mutate(newDF[[varName]] &lt;- str_trim(newDF[[varName]])) #%&gt;%
+    #select(FieldSite, Latitude, Longitude, varName)
+  assign(paste(newDF), data.frame(newDF), envir = .GlobalEnv)
+}</code></pre>
+<pre class="r"><code># Geology
+multiSplit(newDF = &quot;czenSitesGeology2&quot;, existDF =  czenSites, varName =  &quot;Geology&quot;)</code></pre>
+<p>Reorder Surface Stream Order factors</p>
+<pre class="r"><code>czenSitesStreamOrder = czenSitesStreamOrder %&gt;%
+  mutate(SurfaceStreamOrder = factor(SurfaceStreamOrder, levels = c(&quot;First Order&quot;, &quot;Second Order&quot;, &quot;Third Order&quot;, &quot;Fourth Order&quot;, &quot;Fifth Order&quot;, &quot;Sixth Order&quot;)))</code></pre>
+</div>
+</div>
+<div id="section-2" class="section level99">
+<p></p>
+<p>Variation within each Variable</p>
+<p>Longitude:</p>
+<p>Longitude is the ‘x’ value in a coordinate system used to locate points of interest on the Earth’s surface. Lines of Longitude run from North -&gt; South, but measure East -&gt; West. The Prime Meridian (0 longitude), runs through Greenwich, England. This figure is interesting because you can see that the majority of research sites are located in the US. Then there are not any research sites in the Atlantic Ocean, a few sites in Europe, not many in Africa.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = Longitude)) +
+  labs(title = &quot;Field Sites by Longitude&quot;, x = &#39;Longitude&#39;, y = &quot;Number of Field Sites&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Latitude:</p>
+<p>Latitude is the ‘y’ value in a coordinate system used to locate points of interest on the Earth’s surface. Lines of Latitude run from East -&gt; West, but measure North -&gt; South. The Equator (0 latitude), runs through the country of Equador. This figure is interesting because you can observe that most of the research sites are located in the Northern Hemisphere.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = Latitude)) +
+  coord_flip() +
+  labs(title = &quot;Field Sites by Latitude&quot;, x = &#39;Latitude&#39;, y = &quot;Number of Field Sites&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p>Type of Field Site:</p>
+<p>Traditionally, the US has been a leader in long-term ecological research. This is evident in the number of US-Affiliated research sites, as illustrated by this figure.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_bar(mapping = aes(x = factor(1), fill = FieldSiteType), width = 1) +
+  coord_polar(&quot;y&quot;) +
+  scale_fill_brewer(palette = &quot;Paired&quot;) +
+  theme(axis.text.x = element_blank())</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Mean Annual Precip:</p>
+<p>One of the goals of this study is to identify ecosystems which lack representation in long-term research studies. In this case, it appears that there may be a lack of long-term research that focuses on areas that would be classified as rainforests (precipitation &gt; 2500 mm/year)</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = MeanAnnualPrecip)) +
+  labs(title = &quot;Distribution of Average Precipiation at Field Sites&quot;, x = &quot;Mean Annual Precip (mm/year)&quot;, y = &quot;Number of Field Sites in Precip Range&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 30 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<pre class="r"><code>summary(czenSites$MeanAnnualPrecip)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##      50     598     903    1051    1350    5143      30</code></pre>
+<p>Average Temperature</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = AvgTemp)) +
+  labs(title = &quot;Distribution of Average Temperature at Field Sites&quot;, x = &quot;Average Temperature (Degrees Celcius)&quot;, y = &quot;Number of Field Sites in Temperature Range&quot;)</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 63 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<pre class="r"><code>summary(czenSites$AvgTemp)</code></pre>
+<pre><code>##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.    NA&#39;s 
+##     -22       7      12      12      17      27      63</code></pre>
+<p>Geology:</p>
+<p>Most geologic types (types of rocks) are represented in the global long-term reserach sites with the exception of igneaous-ultramafic intrusive/extrusive, and igneous-felsic extrusive. These geologic types may be rare, and possibly only exist on small islands or areas that are not conducive to the current long-term research model.</p>
+<pre class="r"><code>ggplot(data = czenSitesGeology) +
+  geom_bar(mapping = aes(x = Geology)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Types of Geology&quot;, y = &quot;Number of Field Sites with that geology&quot;, x = &quot;Geologic Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesGeology %&gt;% group_by(Geology) %&gt;% count(Geology)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Geology"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"carbonate","2":"33"},{"1":"igneous-felsic extrusive","2":"6"},{"1":"igneous-felsic intrusive","2":"51"},{"1":"igneous-mafic extrusive","2":"9"},{"1":"igneous-mafic intrusive","2":"4"},{"1":"igneous-ultramafic extrusive","2":"1"},{"1":"igneous-ultramafic intrusive","2":"2"},{"1":"meta-igneous","2":"6"},{"1":"metasediments","2":"14"},{"1":"other igneous","2":"14"},{"1":"other metamorphic","2":"15"},{"1":"other sedimentary","2":"49"},{"1":"sandstone","2":"27"},{"1":"shale","2":"30"},{"1":"unconsolidated materials","2":"48"},{"1":"NA","2":"44"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Landcover:</p>
+<p>Focusing on less represented research locations, this figure highlights that highly developed areas (cities) are not well represented in research sites as Evergreen forests are. This is consistent with a trend I have observed in ecology, in that scientists are interested in researching relatively unmodified ecosystems. However, there has been a push lately to begin researching urban ecologic systems. For instance, Baltimore has a well known long-term research site.</p>
+<pre class="r"><code>ggplot(data = czenSitesLandCover) +
+  geom_bar(mapping = aes(x = LandCover)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Types of Land Cover&quot;, y = &quot;Number of Field Sites with that type of land cover&quot;, x = &quot;Land cover Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesLandCover %&gt;% group_by(LandCover) %&gt;% count(LandCover)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["LandCover"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Agriculture- Crops","2":"66"},{"1":"Agriculture- Pasture","2":"35"},{"1":"Barren Land","2":"18"},{"1":"Deciduous Forest","2":"44"},{"1":"Developed- High","2":"6"},{"1":"Developed- Low","2":"16"},{"1":"Evergreen Forest","2":"59"},{"1":"Grassland/Herbaceous","2":"52"},{"1":"Herbaceous Wetlands","2":"12"},{"1":"Mixed Forest","2":"37"},{"1":"Open Water","2":"16"},{"1":"Perennial Ice/Snow","2":"11"},{"1":"Shrubland","2":"34"},{"1":"Unknown","2":"16"},{"1":"Woody Wetlands","2":"14"},{"1":"NA","2":"8"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Climate:</p>
+<p>Polar and Boreal climates are the least represented across the research sites. This is most likely because these environments are more harsh and less conducive to human living. There are more resources needed to live and conduct research in these locations.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_bar(mapping = aes(x = Climate)) +
+  # coord_flip()+
+  labs(title = &quot;Distribution of Types of Climate&quot;, y = &quot;Number of Field Sites with that climate&quot;, x = &quot;Climate type&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<pre class="r"><code>czenSites %&gt;% group_by(Climate) %&gt;% count(Climate)</code></pre>
+<pre><code>## Warning: Factor `Climate` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `Climate` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `Climate` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `Climate` contains implicit NA, consider using
+## `forcats::fct_explicit_na`</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Climate"],"name":[1],"type":["fctr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Boreal","2":"8"},{"1":"Mediterranean","2":"29"},{"1":"Polar","2":"8"},{"1":"Temperate","2":"91"},{"1":"Tropical","2":"24"},{"1":"NA","2":"73"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Sub Climate:</p>
+<p>These results are supportive of those found in the Mean Annual Precipitation figure. Most research sites are in areas that have temperate environments that are not on the extreme ends of humidity. Deserts and rainforests are two areas that are not well represented in long-term research.</p>
+<pre class="r"><code>ggplot(data = czenSitesSubClimate) +
+  geom_bar(mapping = aes(x = SubClimate)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Types of Sub Climates&quot;, y = &quot;Number of Field Sites with that sub climate&quot;, x = &quot;Sub climate Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesSubClimate %&gt;% group_by(SubClimate) %&gt;% count(SubClimate)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["SubClimate"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Arid","2":"2"},{"1":"Dry","2":"17"},{"1":"Humid","2":"60"},{"1":"Hyperhumid","2":"5"},{"1":"Semiarid","2":"16"},{"1":"Subhumid","2":"34"},{"1":"Ultrahyperhumid","2":"3"},{"1":"NA","2":"99"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Networks:</p>
+<p>A network is essentially an organization of scientists involved in the same type of research. For instance, the USFS network is comprised of US Forest Service members that study forestry in the US. NEON stands for National Ecologic Observation Network and houses scientists that focus ecologic systems rather than geologic systems (CZO).</p>
+<pre class="r"><code>ggplot(data = czenSitesNetworks) +
+  geom_bar(mapping = aes(x = Networks)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Research Networks&quot;, y = &quot;Number of Field Sites belonging to that network&quot;, x = &quot; Research Network&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesNetworks %&gt;% group_by(Networks) %&gt;% count(Networks)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Networks"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"ARS","2":"18"},{"1":"CERN","2":"14"},{"1":"CRITEX","2":"16"},{"1":"CUAHSI","2":"4"},{"1":"CZO","2":"14"},{"1":"CZO Affiliate","2":"6"},{"1":"DOE","2":"6"},{"1":"EarthShape","2":"4"},{"1":"H+","2":"5"},{"1":"Independent","2":"18"},{"1":"LTAR","2":"7"},{"1":"LTER","2":"35"},{"1":"LTSE","2":"18"},{"1":"NEON","2":"41"},{"1":"NERC-NSFC","2":"3"},{"1":"OZCAR","2":"11"},{"1":"RBV","2":"16"},{"1":"SITES","2":"8"},{"1":"SoilTrEC","2":"7"},{"1":"SoilTrEC Affiliate","2":"2"},{"1":"TBD","2":"8"},{"1":"TERENO","2":"6"},{"1":"TERN","2":"12"},{"1":"USFS","2":"39"},{"1":"WEBB","2":"6"},{"1":"NA","2":"6"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Soil Order:</p>
+<p>Oxisol and Andisols are the least representative soil orders found at the research sites. This is supportive of our earlier conclusisions - According to the USDA, oxisols are found in tropical and subtropical enviroments and are not naturally fertile. Additionally, according to the USDA, andisols are compartively rare and only make up about 1% of the World’s surface. (USDA, <a href="https://www.nrcs.usda.gov/wps/portal/nrcs/detail/soils/edu/?cid=nrcs142p2_053588" class="uri">https://www.nrcs.usda.gov/wps/portal/nrcs/detail/soils/edu/?cid=nrcs142p2_053588</a>).</p>
+<pre class="r"><code>ggplot(data = czenSitesSoilOrder) +
+  geom_bar(mapping = aes(x = SoilOrder)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Types of Soil Order&quot;, y = &quot;Number of Field Sites with that Soil Order&quot;, x = &quot;Soil Order Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-25-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesSoilOrder %&gt;% group_by(SoilOrder) %&gt;% count(SoilOrder)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["SoilOrder"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Alfisol","2":"40"},{"1":"Andisol","2":"4"},{"1":"Aridisol","2":"14"},{"1":"Entisol","2":"40"},{"1":"Gelisol","2":"8"},{"1":"Histosol","2":"15"},{"1":"Inceptisol","2":"48"},{"1":"Mollisol","2":"34"},{"1":"Oxisol","2":"6"},{"1":"Spodosol","2":"15"},{"1":"Ultisol","2":"29"},{"1":"Vertisol","2":"7"},{"1":"NA","2":"80"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Study Start Date:</p>
+<p>Most long-term research has begun since the major environmental legislation was passed by the Nixon administration. With increases in access to information and focus on how anthropogenic climate change is affecting the Earth’s environmental systems, scientists are becoming more focused on tracking the changes of these systems over longer stretches of time.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_histogram(mapping = aes(x = StudyStartDate)) +
+  # coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<pre><code>## Warning: Removed 6 rows containing non-finite values (stat_bin).</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<pre class="r"><code>summary(czenSites$StudyStartDate)</code></pre>
+<pre><code>##         Min.      1st Qu.       Median         Mean      3rd Qu.         Max. 
+## &quot;1907-01-01&quot; &quot;1965-01-01&quot; &quot;1996-01-01&quot; &quot;1985-11-05&quot; &quot;2013-07-02&quot; &quot;2018-01-01&quot; 
+##         NA&#39;s 
+##          &quot;6&quot;</code></pre>
+<p>Stream Order</p>
+<p>Stream order is a measurment of how many tributaries flow into a stream or river. First order streams are streams who’s primary source of water is from the landscape and/or a spring. When first order streams combine, they produce second order streams. Therefore, this figure is logical in that it shows an abundance of first, second, and third order streams, and less fourth, fifth, and sixth order streams.</p>
+<pre class="r"><code>ggplot(data = czenSitesStreamOrder) +
+  geom_bar(mapping = aes(x = SurfaceStreamOrder)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Surface Stream Orders&quot;, y = &quot;Number of Field Sites with that type of stream&quot;, x = &quot;Stream Order Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesStreamOrder %&gt;% group_by(SurfaceStreamOrder) %&gt;% count(SurfaceStreamOrder)</code></pre>
+<pre><code>## Warning: Factor `SurfaceStreamOrder` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `SurfaceStreamOrder` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `SurfaceStreamOrder` contains implicit NA, consider using
+## `forcats::fct_explicit_na`
+
+## Warning: Factor `SurfaceStreamOrder` contains implicit NA, consider using
+## `forcats::fct_explicit_na`</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["SurfaceStreamOrder"],"name":[1],"type":["fctr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"First Order","2":"34"},{"1":"Second Order","2":"20"},{"1":"Third Order","2":"26"},{"1":"Fourth Order","2":"9"},{"1":"Fifth Order","2":"7"},{"1":"Sixth Order","2":"4"},{"1":"NA","2":"153"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Stream Flow Performance</p>
+<p>Most streams that are studied or present at research sites are perennial streams.</p>
+<pre class="r"><code>ggplot(data = czenSitesStreamPerformance) +
+  geom_bar(mapping = aes(x = StreamFlowPerformance)) +
+  # coord_flip() +
+  labs(title = &quot;Distribution of Stream Performance&quot;, y = &quot;Number of Field Sites with that type of stream&quot;, x = &quot;Stream Performance Classification&quot;) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-28-1.png" width="672" /></p>
+<pre class="r"><code>czenSitesStreamPerformance %&gt;% group_by(StreamFlowPerformance) %&gt;% count(StreamFlowPerformance)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["StreamFlowPerformance"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Ephemeral","2":"19"},{"1":"Intermittent","2":"14"},{"1":"Perennial","2":"91"},{"1":"NA","2":"116"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Ground water</p>
+<p>It appears as though most of the research sites are not focused on measuring groundwater (geologic focus).</p>
+<pre class="r"><code>ggplot(data = czenSitesGroundwater) +
+  geom_bar(mapping = aes(x = Groundwater)) +
+  coord_flip() +
+  labs(title = &quot;Distribution of types of Groundwater&quot;, y = &quot;Number of Field Sites with that type of groundwater&quot;, x = &quot;Groundwater Classification&quot;) </code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-29-1.png" width="672" /></p>
+<pre class="r"><code>  #theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+czenSitesGroundwater %&gt;% group_by(Groundwater) %&gt;% count(Groundwater)</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["Groundwater"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"Combination of aquifers and confining beds","2":"22"},{"1":"Single unconfined aquifer","2":"45"},{"1":"Two interconnected aquifers","2":"7"},{"1":"Unconfined and confined aquifer and confining bed","2":"18"},{"1":"NA","2":"142"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+<div id="section-3" class="section level99">
+<p></p>
+<p>Covariation</p>
+<p>Latitude x Longitude - a crude map of where research sites are. Using Gestalt, rely on your mind to visualize the continents - the US is pretty ‘easy’ to see.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(mapping = aes(x = Longitude, y = Latitude), na.rm = TRUE)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-30-1.png" width="672" /></p>
+<p>Latitude x Mean Annual Precip &amp; Latitude x AvgTemp (Quantitative x Quantitative)</p>
+<p>The most interesting figure to me is the Temperature across Latitude. You can see the decrease in average temperature as latitude diverges from the Equator.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = &quot;Distribution of Annual Precip Across Latitude&quot;, x = &quot;Latitude&quot;, y = &quot;Mean Annual Precipitation (mm/yr)&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-31-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = AvgTemp), na.rm = TRUE) +
+  labs(title = &quot;Distribution of Average Temperature Across Latitude&quot;, x = &quot;Latitude&quot;, y = &quot;Average Temperature (C)&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-31-2.png" width="672" /></p>
+<p>Adding models to Latitude x Mean Annual Precip &amp; Latitude x AvgTemp figures</p>
+<p>I am a bit confused with how the polynomial model has that little bump right around 40 degrees of latitude. Otherwise, the model seems to fit the data well.</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = MeanAnnualPrecip), na.rm = TRUE) +
+  geom_smooth(aes(x = Latitude, y = MeanAnnualPrecip), na.rm = TRUE, method = &quot;lm&quot;, se = 0) +
+  labs(title = &quot;Distribution of Annual Precip Across Latitude&quot;, x = &quot;Latitude&quot;, y = &quot;Mean Annual Precipitation (mm/yr)&quot;) </code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-32-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Latitude, y = AvgTemp), na.rm = TRUE) +
+  geom_smooth(aes(x = Latitude, y = AvgTemp), na.rm = TRUE, method = &quot;loess&quot;, se = 0) +
+  labs(title = &quot;Distribution of Average Temperature Across Latitude&quot;, x = &quot;Latitude&quot;, y = &quot;Average Temperature (C)&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-32-2.png" width="672" /></p>
+<p>Longitude x Precip &amp; Longitude x Avg Temp (Quantitative x Quantitative)</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Longitude, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = &quot;Distribution of Annual Precip Across Longitude&quot;, x = &quot;Longitude&quot;, y = &quot;Mean Annual Precipitation (mm/yr)&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-33-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_point(aes(x = Longitude, y = AvgTemp), na.rm = TRUE)+
+  labs(title = &quot;Distribution of Average Temperature Across Longitude&quot;, x = &quot;Longitude&quot;, y = &quot;Average Temperature (C)&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-33-2.png" width="672" /></p>
+<p>Climate x Sub Climate (Categorical x Categorical)</p>
+<p>This figure supports the claim that temperate climates are well represented, whereas polar and boreal climates are not.</p>
+<pre class="r"><code>ggplot(data = czenSitesSubClimate) +
+  geom_count(aes(x = Climate, y = SubClimate)) +
+  labs(title = &quot;Relationship between Climate and Sub Climate&quot;, y = &quot;Sub Climate&quot;, x = &quot;Climate&quot;)</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-34-1.png" width="672" /></p>
+<p>Climate x AvgTemp and Climate x MeanAnnualPrecip (Categorical x Quantitative)</p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_col(aes(x = Climate, y = AvgTemp), na.rm = TRUE) +
+  labs(title = &quot;Average Temperature as a function of Climate&quot;, x = &quot;Climate&quot;, y = &quot;Average Temperature (C)&quot;)</code></pre>
+<pre><code>## Warning: Removed 63 rows containing missing values (position_stack).</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-35-1.png" width="672" /></p>
+<pre class="r"><code>ggplot(data = czenSites) +
+  geom_col(aes(x = Climate, y = MeanAnnualPrecip), na.rm = TRUE) +
+  labs(title = &quot;Mean Annual Precip as a function of Climate&quot;, x = &quot;Climate&quot;, y = &quot;Mean Annual Precip (mm/yr)&quot;)</code></pre>
+<pre><code>## Warning: Removed 30 rows containing missing values (position_stack).</code></pre>
+<p><img src="index_files/figure-html/unnamed-chunk-35-2.png" width="672" /></p>
+</div>
+<div id="section-4" class="section level99">
+<p></p>
+<p>Part 2</p>
+<p>Week 10 - Tidy Data &amp; Functions I had worked to tidy these data in the first iteration of the this project. These efforts mainly consisted of dealing with the multi-valued entries found in 8 of the 17 variables. Ultimately I found that the best method for dealing with the multi-valued entries was to create a new dataframe for each variable, and split the multi-valued entries into component pieces, each with their own row. This way I could capture every feature each research site represented, which maintaining the integrity of the data. As explained above, I tried to implement these cleaning methods as one function that would handle all of the varaibles, but was unsuccessful in these efforts. Ideally, the function would be called 8 times, and create 8 new dataframes.</p>
+<p>Week 11 - Modeling I could not think of much to model other than the latitude x avg temp and latitude x mean annual precip data. The models seemed to fit the data in the latitude x avg temp but latitude is not a good predictor of mean annual precip.</p>
+<p>Week 12 - Factors and Dates I applied the lesson from week 12 in two locations in my workflow. The first was the Start date (and End date for some) of research at each research location. Originally, I had parsed out just the Start date and casted the data to an integer. To make use of the date type, I split the start and end dates, then because I only had the year, I added <code>-01-01</code> to use Jan 1 as a place holder, then converted the data to a date format. The other location which needed adjustment was the ordering of factors in the Surface Stream Order variable. To fix this, I simply used mutate and factor to reorder the factor levels.</p>
+</div>
+<div id="section-5" class="section level99">
+<p></p>
+<p>Reflections from part 1:</p>
+<p>The method of data exploration that I chose to pursue was that of fixing known issues right away (I knew I would need to remove the units from AvgTemp and MeanAnnualPrecip). Then I created rough figures for each variable and identified issues that needed to be resolved. These included misspellings of data values (secimentary instead of sedimentary, or interntaional instead of international). I then needed to figure out what to do with the variables that had multiple values for some observations. Based on some internet searching, the best course of action I found was to use the tidyr function ‘unnest’ to split the multivalues at the commas that separated them. What this did was create a new observation for each value in the column. Therefore, I needed to create separate dataframes for each multiple value variable I fixed, or else the main czenSites dataframe would have redundant observations. This process was definitely challenging, but rewarding once I figured it out. Once I had completed these preliminary data cleanings, I returned to the individual figures to identify more subtle issues. Once I had identified those issues, I made the changes back in the data cleaning section. I am generally happy with the way my figures turned out. I included multiple covariation figures to illustrate noisy data vs the cleaner Latitude x AvgTemp. I wish I had more knowledge to use color to highlight certain aspects of each figure. Additionally, I tried to figure out how to re-order the Stream Order figure (First -&gt; Sixth instead of Alphabetical) but was unable to figure that out. Overall, I was not surprised by the areas of study that were lacking in representation. Most existing Field sites are in the US and cover a broad range of systems, but there are still many unique systems across the Earth that do not have long-term research organizations established.</p>
+<p>Reflections from part 2:</p>
+<p>The method of data exploration that I chose to pursue was that of identifying issues with the first iteration and then making improvements based on the past few weeks of material. I knew I wanted to create a function that automated the multi-value splitting code blocks that I had copied and pasted. I also knew that I needed to implement some date processing for the Study Start and Study End date fields. Beyond this, the project was just making improvements to the first iteration. I am pretty frustrated with the lack of working solution for the multi-value splitting function. It has been pretty hard to look into the black box and see what is going on with the code. I did learn a bit about sending a variable through a function using double brackets instead of a dollar sign, but I was not able to get this working before the due date. Additionally, I feel that the figure for the Latitude x Avg temp model was pretty effective, whereas the figure modeling Mean Annual Precip does not follow particular story.</p>
+</div>
+<div id="section-6" class="section level99">
+<p></p>
+<p>Conclusions</p>
+<p>I think the most interesting things that I found through this analysis was the areas that are lacking representation in long-term research. Comparatively, we have A LOT of research sites in Northern America, and the biomes that exist within that region. Conversely, there are not a lot of long-term research sites in Africa, South America, or at the Poles.</p>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,5 +1,5 @@
 ---
-title: "ClementiPrj1DataExploration"
+title: "CZEN Research Site Dataset Exploration"
 author: "Johnathan Clementi"
 date: "4/21/2020"
 output:
@@ -103,7 +103,7 @@ czenSites = czenSites %>%
 Remove units from AvgTemp, then convert to integer & remove dubious value (73C = 163F & 34C = 93.2F) from AvgTemp
 ```{r}
 czenSites = czenSites %>%
-  mutate(AvgTemp = str_replace(AvgTemp, "¡C", "")) %>%
+  mutate(AvgTemp = str_replace(AvgTemp, "Â¡C", "")) %>%
   mutate(AvgTemp = str_replace(AvgTemp, "73", NA_character_)) %>%
   mutate(AvgTemp = str_replace(AvgTemp, "34", NA_character_)) %>%
   mutate(AvgTemp = as.numeric(AvgTemp))
